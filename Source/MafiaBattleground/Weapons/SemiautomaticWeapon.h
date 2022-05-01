@@ -8,22 +8,34 @@
 
 #include "CoreMinimal.h"
 #include "Weapon.h"
-#include "AutomaticWeapon.generated.h"
+#include "SemiautomaticWeapon.generated.h"
 
-
+/**
+ * 
+ */
 UCLASS()
-class MAFIABATTLEGROUND_API AAutomaticWeapon : public AWeapon
+class MAFIABATTLEGROUND_API ASemiautomaticWeapon : public AWeapon
 {
     GENERATED_BODY()
 
 public:
     //!Constructor
-    AAutomaticWeapon();
+    ASemiautomaticWeapon();
 
+protected:
+    //*******************************************************************************************************************
+    //                                          PROTECTED VARIABLES                                                     *
+    //*******************************************************************************************************************
+
+    bool bHasTriggered;
+
+public:
     //*******************************************************************************************************************
     //                                          PUBLIC FUNCTIONS                                                        *
     //*******************************************************************************************************************
 
     virtual void StartFire() override;
+    virtual void StopFire() override;
+    virtual void Fire() override;
 
 };

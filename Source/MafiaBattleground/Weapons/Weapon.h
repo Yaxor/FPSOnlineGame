@@ -48,7 +48,7 @@ protected:
     UPROPERTY()
     FName MuzzleSocketName;
 
-    FTimerHandle TimerHandle_Cadence;
+    FTimerHandle TimerHandle_Fire;
 
     UPROPERTY(Replicated)
     uint8 CurrentAmmo;
@@ -95,7 +95,10 @@ public:
 
     virtual void StartFire();
 
-    void StopFire();
+    virtual void StopFire();
+
+    /* Trace the world, from pawn eyes to creosshair location */
+    virtual void Fire();
 
 protected:
     //*******************************************************************************************************************
@@ -104,8 +107,10 @@ protected:
 
     virtual void BeginPlay() override;
 
-    /* Trace the world, from pawn eyes to creosshair location */
-    virtual void Fire();
+    UFUNCTION(Server, Reliable, WithValidation)
+    void ServerFire();
+    UFUNCTION(Server, Reliable, WithValidation)
+    void ServerReload();
 
     void PlayImpactFX(EPhysicalSurface SurfaceType, FVector ImpactPoint);
 
@@ -115,11 +120,6 @@ protected:
     void MultiPlayImpactFX(EPhysicalSurface SurfaceType, FVector ImpactPoint);
     UFUNCTION(NetMulticast, Reliable, WithValidation)
     void MultiPlayFireFX();
-
-    UFUNCTION(Server, Reliable, WithValidation)
-    void ServerFire();
-    UFUNCTION(Server, Reliable, WithValidation)
-    void ServerReload();
 
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
