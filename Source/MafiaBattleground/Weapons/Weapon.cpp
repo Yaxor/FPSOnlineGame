@@ -34,15 +34,16 @@ AWeapon::AWeapon()
 
     // Make other gunmesh for the other clients
 
-    WeaponSocket     = FName("WeaponSocket");
-    MuzzleSocketName = FName("MuzzleSocket");
-    AimFOV           = 65.0f;
-    AimInterSpeedAim = 22.0f;
-    BaseDamage       = 20.0f;
-    BulletSpread     = 2.0f;
-    MaxAmmo          = 30;
-    FireRate         = 600.0f;
-    ShotDistance     = 10000.0f;
+    WeaponSocket       = FName("WeaponSocket");
+    MuzzleSocketName   = FName("MuzzleSocket");
+    AimFOV             = 65.0f;
+    AimInterSpeedAim   = 22.0f;
+    BaseDamage         = 20.0f;
+    BulletSpread       = 2.0f;
+    HeadshotMultiplier = 2.5f;
+    MaxAmmo            = 30;
+    FireRate           = 600.0f;
+    ShotDistance       = 10000.0f;
 
     SetReplicates(true);
 }
@@ -185,6 +186,8 @@ void AWeapon::Fire()
         PlayImpactFX(SurfaceType, TraceEndPoint);
 
         LastFireTime = GetWorld()->TimeSeconds;
+
+        // Por cada tiro rotar un poco el arma hacia arriba o sumarle un poco de altura al EndLocation a la direccion
     }
 }
 

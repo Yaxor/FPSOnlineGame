@@ -8,6 +8,6 @@
 #include "AutomaticWeapon.h"
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-AAssaultRifle::AAutomaticWeapon()
+AAutomaticWeapon::AAutomaticWeapon()
 {
 }

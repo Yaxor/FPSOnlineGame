@@ -101,7 +101,7 @@ void AFPSMBCharacter::MultiSetAiming_Implementation(bool bIsAimingVal)
     {
         if (bIsAimingVal)
         {
-            FPSCamera->AttachToComponent(CurrentWeapon->GetGunMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("CameraAim"));
+            FPSCamera->AttachToComponent(CurrentWeapon->GetGunMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("CameraAim"));
             ArmsMesh->SetRelativeLocation(ArmsAimLocation);
             FPSCamera->bUsePawnControlRotation = true;
         }
