@@ -27,8 +27,8 @@ protected:
     //                                          PROTECTED COMPONENTS AND VARIABLES                                      *
     //*******************************************************************************************************************
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
-    class USkeletalMeshComponent* GunMesh;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
+    class USkeletalMeshComponent* WeaponMesh;
 
     UPROPERTY(EditDefaultsOnly, Category = Weapon)
     TSubclassOf<class UCameraShakeBase> FireCamShake;
@@ -80,7 +80,7 @@ public:
     /* Return true if it is a ListenerServer or false if it is a Client */
     FORCEINLINE bool GetIsServer() { return GetLocalRole() == ROLE_Authority && (GetRemoteRole() == ROLE_SimulatedProxy || GetRemoteRole() == ROLE_AutonomousProxy); };
 
-    FORCEINLINE USkeletalMeshComponent* GetGunMesh() { return GunMesh; };
+    FORCEINLINE USkeletalMeshComponent* GetGunMesh() { return WeaponMesh; };
     FORCEINLINE float GetWeaponAimFOV()              { return AimFOV; };
     FORCEINLINE float GetWeaponInterpSpeedAim()      { return AimInterSpeedAim; };
 

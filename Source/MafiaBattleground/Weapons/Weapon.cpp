@@ -29,8 +29,8 @@ FAutoConsoleVariableRef CVARDebugWeaponDrawing(TEXT("Mafia.DebugWeapons"), Debug
 //------------------------------------------------------------------------------------------------------------------------------------------
 AWeapon::AWeapon()
 {
-    GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>("GunMesh");
-    GunMesh->bOnlyOwnerSee = true;
+    WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>("GunMesh");
+    WeaponMesh->bOnlyOwnerSee = true;
 
     // Make other gunmesh for the other clients
 
@@ -59,11 +59,11 @@ void AWeapon::ServerGiveToPayer_Implementation(class ACharacter* Player)
 
         if (MyFPSPlayer)
         {
-            GunMesh->AttachToComponent(MyFPSPlayer->GetArmsMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
+            WeaponMesh->AttachToComponent(MyFPSPlayer->GetArmsMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
             return;
         }
 
-        GunMesh->AttachToComponent(Player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
+        WeaponMesh->AttachToComponent(Player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
     }
 }
 
@@ -234,7 +234,7 @@ void AWeapon::MultiPlayImpactFX_Implementation(EPhysicalSurface SurfaceType, FVe
 
     if (SelectedVFX)
     {
-        FVector MuzzleLocation = GunMesh->GetSocketLocation(MuzzleSocketName);
+        FVector MuzzleLocation = WeaponMesh->GetSocketLocation(MuzzleSocketName);
 
         FVector ShotDiretion = ImpactPoint - MuzzleLocation;
         ShotDiretion.Normalize();
@@ -253,7 +253,7 @@ void AWeapon::MultiPlayFireFX_Implementation()
     // Shot FX
     if (MuzzleVFX)
     {
-        UGameplayStatics::SpawnEmitterAttached(MuzzleVFX, GunMesh, MuzzleSocketName);
+        UGameplayStatics::SpawnEmitterAttached(MuzzleVFX, WeaponMesh, MuzzleSocketName);
     }
 
     // Camera Shake
