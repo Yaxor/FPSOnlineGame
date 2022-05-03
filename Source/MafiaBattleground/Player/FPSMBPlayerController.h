@@ -54,6 +54,14 @@ private:
 
     virtual void SetupInputComponent() override;
 
+    void ChangeWeapon(const uint8_t Index);
+
+    template<uint8_t Index>
+    void ChangeWeapon()
+    {
+        ChangeWeapon(Index);
+    }
+
     void SetAim(bool bIsAiming);
 
     template<bool bIsAiming>

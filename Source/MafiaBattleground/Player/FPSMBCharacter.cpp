@@ -70,6 +70,7 @@ AFPSMBCharacter::AFPSMBCharacter()
     CrouchSALocation    = FVector(0.0f, 0.0f, 40.0f);
     ArmsAimLocation     = FVector(30.0f, -6.0f, -30.0f);
     ArmsDefaultLocation = FVector(30.0f, 6.0f, -40.0f);
+    CurrentWeaponIndex  = 0;
     CrouchInterpSpeed   = 10.0f;
     RunMaxWalkSpeed     = 1000.0f;
     AimMaxWalkSpeed     = 350.0f;
@@ -217,16 +218,63 @@ void AFPSMBCharacter::ServerSpawnDefaultWeapon_Implementation()
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
     SpawnParams.Instigator = this;
 
-    CurrentWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeapon, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+    CurrentWeapon = GetWorld()->SpawnActor<AWeapon>(AK47, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+    Weapons.Add(CurrentWeapon);
+    Weapons.Add(GetWorld()->SpawnActor<AWeapon>(SARifle, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams));
     if (CurrentWeapon)
     {
         CurrentWeapon->ServerGiveToPayer(this);
-        CurrentWeapon->MyPlayer = this;
     }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 bool AFPSMBCharacter::ServerSpawnDefaultWeapon_Validate()
+{    return true;}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBCharacter::ChangeWeapon(uint8_t WeaponIndex)
+{
+    if (!GetIsServer())
+    {
+        ServerChangeWeapon(WeaponIndex);
+        return;
+    }
+
+    if (WeaponIndex == CurrentWeaponIndex)
+    {
+        return;
+    }
+
+    // Probar de solo dejar cambiar arma si no estoy apuntando
+
+    ServerSetAiming(false);
+    CurrentWeapon->StopFire();
+    CurrentWeaponIndex = WeaponIndex;
+    CurrentWeapon      = Weapons[CurrentWeaponIndex];
+
+    for (AWeapon*& Weapon : Weapons)
+    {
+        if (Weapon == Weapons[CurrentWeaponIndex])
+        {
+            Weapon->ServerGiveToPayer(this);
+            continue;
+        }
+
+        GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("CHANGE WEAPON"));
+        Weapon->GetGunMesh()->AttachToComponent(ArmsMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("FoldWeapon"));
+    }
+
+    //CurrentWeapon->ServerGiveToPayer(this);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBCharacter::ServerChangeWeapon_Implementation(int WeaponIndex)
+{
+    ChangeWeapon(WeaponIndex);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AFPSMBCharacter::ServerChangeWeapon_Validate(int WeaponIndex)
 {    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------

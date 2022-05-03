@@ -19,16 +19,13 @@ public:
     //!Constructor
     AWeapon();
 
-    UPROPERTY()
-    class AFPSMBCharacter* MyPlayer = nullptr;
-
 protected:
     //*******************************************************************************************************************
     //                                          PROTECTED COMPONENTS AND VARIABLES                                      *
     //*******************************************************************************************************************
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
-    class USkeletalMeshComponent* WeaponMesh;
+    class USkeletalMeshComponent* GunMesh;
 
     UPROPERTY(EditDefaultsOnly, Category = Weapon)
     TSubclassOf<class UCameraShakeBase> FireCamShake;
@@ -80,9 +77,10 @@ public:
     /* Return true if it is a ListenerServer or false if it is a Client */
     FORCEINLINE bool GetIsServer() { return GetLocalRole() == ROLE_Authority && (GetRemoteRole() == ROLE_SimulatedProxy || GetRemoteRole() == ROLE_AutonomousProxy); };
 
-    FORCEINLINE USkeletalMeshComponent* GetGunMesh() { return WeaponMesh; };
-    FORCEINLINE float GetWeaponAimFOV()              { return AimFOV; };
-    FORCEINLINE float GetWeaponInterpSpeedAim()      { return AimInterSpeedAim; };
+    FORCEINLINE USkeletalMeshComponent* GetGunMesh()              { return GunMesh; };
+    FORCEINLINE FName                   GetWeaponSocket()         { return WeaponSocket; };
+    FORCEINLINE float                   GetWeaponAimFOV()         { return AimFOV; };
+    FORCEINLINE float                   GetWeaponInterpSpeedAim() { return AimInterSpeedAim; };
 
     //*******************************************************************************************************************
     //                                          PUBLIC FUNCTIONS                                                        *

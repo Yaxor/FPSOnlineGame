@@ -15,6 +15,8 @@ class MAFIABATTLEGROUND_API AFPSMBCharacter : public ACharacter
 {
     GENERATED_BODY()
 
+    friend class AFPSMBPlayerController;
+
 public:
     //!Constructor
     AFPSMBCharacter();
@@ -33,7 +35,12 @@ protected:
     class USkeletalMeshComponent* ArmsMesh;
 
     UPROPERTY(EditDefaultsOnly, Category = Player)
-    TSubclassOf<class AWeapon> DefaultWeapon;
+    TSubclassOf<class AWeapon> AK47;
+    UPROPERTY(EditDefaultsOnly, Category = Player)
+    TSubclassOf<class AWeapon> SARifle;
+
+    UPROPERTY(Replicated)
+    TArray<class AWeapon*> Weapons;
 
     UPROPERTY(Replicated,VisibleAnywhere)
     class AWeapon* CurrentWeapon = nullptr;
@@ -45,6 +52,8 @@ protected:
     FVector DefaultSALocation;
     UPROPERTY(EditDefaultsOnly, Category = Player)
     FVector CrouchSALocation;
+
+    uint8_t CurrentWeaponIndex;
 
     float DefaultFOV;
     UPROPERTY(EditDefaultsOnly, Category = Player);
@@ -73,11 +82,11 @@ public:
     /* Return true if it is a ListenerServer or false if it is a Client */
     FORCEINLINE bool GetIsServer() { return GetLocalRole() == ROLE_Authority && (GetRemoteRole() == ROLE_SimulatedProxy || GetRemoteRole() == ROLE_AutonomousProxy); };
 
-    FORCEINLINE USkeletalMeshComponent* GetArmsMesh() { return ArmsMesh; };
-    FORCEINLINE bool GetIsDead() { return bIsDead; };
-    FORCEINLINE bool GetIsAiming() { return bIsAiming; }
-    FORCEINLINE UCameraComponent* GetCamera() { return FPSCamera; }
-    FORCEINLINE AWeapon* GetCurrentWeapon() { return CurrentWeapon; }
+    FORCEINLINE USkeletalMeshComponent* GetArmsMesh()      { return ArmsMesh; };
+    FORCEINLINE bool                    GetIsDead()        { return bIsDead; };
+    FORCEINLINE bool                    GetIsAiming()      { return bIsAiming; }
+    FORCEINLINE UCameraComponent*       GetCamera()        { return FPSCamera; }
+    FORCEINLINE AWeapon*                GetCurrentWeapon() { return CurrentWeapon; }
 
     //*******************************************************************************************************************
     //                                          PUBLIC FUNCTIONS                                                        *
@@ -120,6 +129,12 @@ protected:
     /* Spawn Default Weapon */
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerSpawnDefaultWeapon();
+
+    /*Change the equipped weapon to that of the number passed by parameter*/
+    void ChangeWeapon(uint8_t WeaponIndex);
+
+    UFUNCTION(Server, Reliable, WithValidation)
+    void ServerChangeWeapon(int WeaponIndex);
 
     /* Update the MaxWalkSpeed */
     UFUNCTION(Server, Reliable, WithValidation)

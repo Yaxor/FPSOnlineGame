@@ -44,6 +44,9 @@ void AFPSMBPlayerController::SetupInputComponent()
     InputComponent->BindAction("Fire"  , IE_Pressed , this, &AFPSMBPlayerController::StartFireWeapon);
     InputComponent->BindAction("Fire"  , IE_Released, this, &AFPSMBPlayerController::StopFireWeapon);
     InputComponent->BindAction("Reload", IE_Pressed , this, &AFPSMBPlayerController::ReloadWeapon);
+    InputComponent->BindAction("ItemOne", IE_Pressed, this, &AFPSMBPlayerController::ChangeWeapon<0>);
+    InputComponent->BindAction("ItemTwo", IE_Pressed, this, &AFPSMBPlayerController::ChangeWeapon<1>);
+
 
     InputComponent->BindAxis("MoveForward", this, &AFPSMBPlayerController::MoveForward);
     InputComponent->BindAxis("MoveRight"  , this, &AFPSMBPlayerController::MoveRight);
@@ -52,6 +55,18 @@ void AFPSMBPlayerController::SetupInputComponent()
     InputComponent->BindAxis("LookUp"    , this, &AFPSMBPlayerController::AddControllerPitchInput);
     InputComponent->BindAxis("TurnRate"  , this, &AFPSMBPlayerController::TurnAtRate);
     InputComponent->BindAxis("LookUpRate", this, &AFPSMBPlayerController::LookUpAtRate);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBPlayerController::ChangeWeapon(const uint8_t Index)
+{
+    if (MyPlayerRef)
+    {
+        if (!MyPlayerRef->GetIsDead())
+        {
+            MyPlayerRef->ChangeWeapon(Index);
+        }
+    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------

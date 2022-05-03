@@ -29,8 +29,8 @@ FAutoConsoleVariableRef CVARDebugWeaponDrawing(TEXT("Mafia.DebugWeapons"), Debug
 //------------------------------------------------------------------------------------------------------------------------------------------
 AWeapon::AWeapon()
 {
-    WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>("GunMesh");
-    WeaponMesh->bOnlyOwnerSee = true;
+    GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>("GunMesh");
+    GunMesh->bOnlyOwnerSee = true;
 
     // Make other gunmesh for the other clients
 
@@ -59,11 +59,11 @@ void AWeapon::ServerGiveToPayer_Implementation(class ACharacter* Player)
 
         if (MyFPSPlayer)
         {
-            WeaponMesh->AttachToComponent(MyFPSPlayer->GetArmsMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
+            GunMesh->AttachToComponent(MyFPSPlayer->GetArmsMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
             return;
         }
 
-        WeaponMesh->AttachToComponent(Player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
+        GunMesh->AttachToComponent(Player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
     }
 }
 
@@ -121,21 +121,23 @@ void AWeapon::Fire()
     if (!GetIsServer()) //GetLocalRole() < ROLE_Authority)
     {
         ServerFire();
+        return;
     }
 
     AActor* MyOwner = GetOwner();
+    AFPSMBCharacter* MyFPSPlayer = CastChecked<AFPSMBCharacter>(GetOwner());
 
-    if (MyOwner && GetIsServer()) // (GetLocalRole() == ROLE_Authority))
+    if (MyOwner && MyFPSPlayer && GetIsServer()) // (GetLocalRole() == ROLE_Authority))
     {
         CurrentAmmo--;
 
-        const FVector& StartLocation = MyPlayer->GetCamera()->GetComponentLocation();
-        const FRotator& AimRotation  = MyPlayer->GetBaseAimRotation();
+        const FVector& StartLocation = MyFPSPlayer->GetCamera()->GetComponentLocation();
+        const FRotator& AimRotation  = MyFPSPlayer->GetBaseAimRotation();
 
         FVector ShotDirection = AimRotation.Vector();
 
         // Bullet Spread if my player is not aiming
-        if (!MyPlayer->GetIsAiming())
+        if (!MyFPSPlayer->GetIsAiming())
         {
             float HalfRad = FMath::DegreesToRadians(BulletSpread);
             ShotDirection = FMath::VRandCone(ShotDirection, HalfRad, HalfRad);
@@ -234,7 +236,7 @@ void AWeapon::MultiPlayImpactFX_Implementation(EPhysicalSurface SurfaceType, FVe
 
     if (SelectedVFX)
     {
-        FVector MuzzleLocation = WeaponMesh->GetSocketLocation(MuzzleSocketName);
+        FVector MuzzleLocation = GunMesh->GetSocketLocation(MuzzleSocketName);
 
         FVector ShotDiretion = ImpactPoint - MuzzleLocation;
         ShotDiretion.Normalize();
@@ -253,7 +255,7 @@ void AWeapon::MultiPlayFireFX_Implementation()
     // Shot FX
     if (MuzzleVFX)
     {
-        UGameplayStatics::SpawnEmitterAttached(MuzzleVFX, WeaponMesh, MuzzleSocketName);
+        UGameplayStatics::SpawnEmitterAttached(MuzzleVFX, GunMesh, MuzzleSocketName);
     }
 
     // Camera Shake
