@@ -252,6 +252,7 @@ bool AWeapon::MultiPlayImpactFX_Validate(EPhysicalSurface SurfaceType, FVector I
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::MultiPlayFireFX_Implementation()
 {
+    // Cambiar a Client
     // Shot FX
     if (MuzzleVFX)
     {

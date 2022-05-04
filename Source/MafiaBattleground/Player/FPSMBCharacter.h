@@ -49,9 +49,11 @@ protected:
     FVector ArmsDefaultLocation;
     UPROPERTY(BlueprintReadOnly)
     FVector CurrentVelocity;
-    FVector DefaultSALocation;
     UPROPERTY(EditDefaultsOnly, Category = Player)
     FVector CrouchSALocation;
+    FVector DefaultSALocation;
+    UPROPERTY(EditDefaultsOnly, Category = Player)
+    FVector FoldWeaponLocation;
 
     uint8_t CurrentWeaponIndex;
 

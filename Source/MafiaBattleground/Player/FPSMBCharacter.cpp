@@ -67,9 +67,10 @@ AFPSMBCharacter::AFPSMBCharacter()
     bUseControllerRotationYaw   = true;
     bUseControllerRotationRoll  = false;
 
-    CrouchSALocation    = FVector(0.0f, 0.0f, 40.0f);
     ArmsAimLocation     = FVector(30.0f, -6.0f, -30.0f);
     ArmsDefaultLocation = FVector(30.0f, 6.0f, -40.0f);
+    CrouchSALocation    = FVector(0.0f, 0.0f, 40.0f);
+    FoldWeaponLocation  = FVector(0.0f, 0.0f, -600.0f);
     CurrentWeaponIndex  = 0;
     CrouchInterpSpeed   = 10.0f;
     RunMaxWalkSpeed     = 1000.0f;
@@ -249,9 +250,12 @@ void AFPSMBCharacter::ChangeWeapon(uint8_t WeaponIndex)
 
     ServerSetAiming(false);
     CurrentWeapon->StopFire();
+
+    // Update Current Weapon
     CurrentWeaponIndex = WeaponIndex;
     CurrentWeapon      = Weapons[CurrentWeaponIndex];
 
+    // Relocalize the Weapons
     for (AWeapon*& Weapon : Weapons)
     {
         if (Weapon == Weapons[CurrentWeaponIndex])
@@ -260,11 +264,11 @@ void AFPSMBCharacter::ChangeWeapon(uint8_t WeaponIndex)
             continue;
         }
 
-        GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("CHANGE WEAPON"));
-        Weapon->GetGunMesh()->AttachToComponent(ArmsMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("FoldWeapon"));
+        //GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("CHANGE WEAPON"));
+        Weapon->GetGunMesh()->SetWorldLocation(FoldWeaponLocation);
+        Weapon->GetGunMesh()->SetWorldRotation(FRotator::ZeroRotator);
+        Weapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
     }
-
-    //CurrentWeapon->ServerGiveToPayer(this);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
