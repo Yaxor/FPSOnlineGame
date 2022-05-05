@@ -158,7 +158,7 @@ void AFPSMBPlayerController::StartFireWeapon()
 {
     if (MyPlayerRef)
     {
-        if (!MyPlayerRef->GetIsDead() && MyPlayerRef->GetCurrentWeapon())
+        if ((!MyPlayerRef->GetIsDead()) && (MyPlayerRef->GetCurrentWeapon()) && (!MyPlayerRef->bIsRuning))
         {
             MyPlayerRef->GetCurrentWeapon()->StartFire();
         }
@@ -184,7 +184,8 @@ void AFPSMBPlayerController::ReloadWeapon()
     {
         if (!MyPlayerRef->GetIsDead() && MyPlayerRef->GetCurrentWeapon())
         {
-            MyPlayerRef->GetCurrentWeapon()->Reload();
+            //MyPlayerRef->GetCurrentWeapon()->Reload();
+            MyPlayerRef->WeaponReload();
         }
     }
 }

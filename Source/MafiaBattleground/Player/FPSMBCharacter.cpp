@@ -106,6 +106,7 @@ void AFPSMBCharacter::MultiSetAiming_Implementation(bool bIsAimingVal)
             FPSCamera->AttachToComponent(CurrentWeapon->GetGunMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("CameraAim"));
             ArmsMesh->SetRelativeLocation(ArmsAimLocation);
             FPSCamera->bUsePawnControlRotation = true;
+            bIsRuning = false;
         }
         else
         {
@@ -125,10 +126,17 @@ bool AFPSMBCharacter::MultiSetAiming_Validate(bool bIsAimingVal)
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AFPSMBCharacter::ServerSetRun_Implementation(bool bIsRuningVal)
 {
+    // Run
     if (!bIsAiming)
     {
         bIsRuning = bIsRuningVal;
         ServerSetMaxSpeed();
+
+        if (CurrentWeapon)
+        {
+            CurrentWeapon->StopFire();
+        }
+
         return;
     }
 
@@ -175,6 +183,19 @@ void AFPSMBCharacter::Tick(float DeltaTime)
     ServerSetJump();
     ZoomInterp(DeltaTime);
     UpdateCrouch(GetCharacterMovement()->IsCrouching(), DeltaTime);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBCharacter::WeaponReload()
+{
+    if (CurrentWeapon->GetCanReload())
+    {
+        // Stop runing and aiming
+        ServerSetRun(false);
+        ServerSetAiming(false);
+
+        CurrentWeapon->Reload();
+    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -246,8 +267,10 @@ void AFPSMBCharacter::ChangeWeapon(uint8_t WeaponIndex)
         return;
     }
 
-    // Probar de solo dejar cambiar arma si no estoy apuntando
+    // Stop runing
+    ServerSetRun(false);
 
+    // Stop aiming and stop fire
     ServerSetAiming(false);
     CurrentWeapon->StopFire();
 

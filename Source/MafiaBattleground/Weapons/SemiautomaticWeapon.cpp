@@ -16,6 +16,8 @@ ASemiautomaticWeapon::ASemiautomaticWeapon()
 //------------------------------------------------------------------------------------------------------------------------------------------
 void ASemiautomaticWeapon::StartFire()
 {
+    Super::StartFire();
+
     Fire();
 }
 

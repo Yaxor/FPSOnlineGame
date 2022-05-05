@@ -46,6 +46,8 @@ AWeapon::AWeapon()
     ShotDistance       = 10000.0f;
 
     SetReplicates(true);
+    SetReplicatingMovement(true);
+    bAlwaysRelevant = true;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -75,10 +77,6 @@ bool AWeapon::ServerGiveToPayer_Validate(class ACharacter* Player)
 void AWeapon::Reload()
 {
     // Call in animation reload
-    if (CurrentAmmo == MaxAmmo)
-    {
-        return;
-    }
 
     // If you are a Client, send a request to Server
     if (!GetIsServer()) // GetLocalRole() < ROLE_Authority)
@@ -87,6 +85,7 @@ void AWeapon::Reload()
         return;
     }
 
+    StopFire();
     CurrentAmmo = MaxAmmo;
 }
 
@@ -98,7 +97,7 @@ void AWeapon::StartFire()
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::StopFire()
 {
-    GetWorldTimerManager().ClearTimer(TimerHandle_Fire);
+    ClientStopFire();
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -109,6 +108,16 @@ void AWeapon::BeginPlay()
     Cadence     = (60 / FireRate);
     CurrentAmmo = MaxAmmo;
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::ClientStopFire_Implementation()
+{
+    GetWorldTimerManager().ClearTimer(TimerHandle_Fire);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AWeapon::ClientStopFire_Validate()
+{    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::Fire()
@@ -182,7 +191,11 @@ void AWeapon::Fire()
         }
 
         PlayFireFX();
-        PlayImpactFX(SurfaceType, TraceEndPoint);
+
+        if (Hit.GetActor())
+        {
+            PlayImpactFX(SurfaceType, TraceEndPoint);
+        }
 
         LastFireTime = GetWorld()->TimeSeconds;
 
@@ -219,7 +232,7 @@ void AWeapon::PlayImpactFX(EPhysicalSurface SurfaceType, FVector ImpactPoint)
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::PlayFireFX()
 {
-    MultiPlayFireFX();
+    ClientPlayFireFX();
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -241,7 +254,7 @@ void AWeapon::MultiPlayImpactFX_Implementation(EPhysicalSurface SurfaceType, FVe
         FVector ShotDiretion = ImpactPoint - MuzzleLocation;
         ShotDiretion.Normalize();
 
-        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SelectedVFX, ImpactPoint, ShotDiretion.Rotation());
+        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SelectedVFX, ImpactPoint, ShotDiretion.Rotation(), true, EPSCPoolMethod::AutoRelease, true);
     }
 }
 
@@ -250,13 +263,16 @@ bool AWeapon::MultiPlayImpactFX_Validate(EPhysicalSurface SurfaceType, FVector I
 {    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-void AWeapon::MultiPlayFireFX_Implementation()
+void AWeapon::ClientPlayFireFX_Implementation()
 {
-    // Cambiar a Client
     // Shot FX
     if (MuzzleVFX)
     {
-        UGameplayStatics::SpawnEmitterAttached(MuzzleVFX, GunMesh, MuzzleSocketName);
+        UGameplayStatics::SpawnEmitterAttached(MuzzleVFX, GunMesh, MuzzleSocketName, FVector::ZeroVector, FRotator::ZeroRotator,
+                                               EAttachLocation::SnapToTarget, true, EPSCPoolMethod::AutoRelease, true);
+        //const FVector MuzzleLocation  = GunMesh->GetSocketLocation(MuzzleSocketName);
+        //const FRotator MuzzleRotation = GunMesh->GetSocketRotation(MuzzleSocketName);
+        //UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleVFX, MuzzleLocation, MuzzleRotation);
     }
 
     // Camera Shake
@@ -272,7 +288,7 @@ void AWeapon::MultiPlayFireFX_Implementation()
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-bool AWeapon::MultiPlayFireFX_Validate()
+bool AWeapon::ClientPlayFireFX_Validate()
 {    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------

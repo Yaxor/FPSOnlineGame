@@ -15,6 +15,8 @@ AAutomaticWeapon::AAutomaticWeapon()
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AAutomaticWeapon::StartFire()
 {
+    Super::StartFire();
+
     float FirstDelay = FMath::Max(LastFireTime + Cadence - GetWorld()->TimeSeconds, 0.0f);
 
     GetWorldTimerManager().SetTimer(TimerHandle_Fire, this, &AWeapon::Fire, Cadence, true, FirstDelay);

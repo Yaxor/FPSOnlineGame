@@ -100,9 +100,13 @@ public:
     /* Set Is Aiming */
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerSetAiming(bool bIsAimingVal);
+
+    /* If is not aiming set bIsRuning to bIsRuningVal, SetMaxSpeed and StopFire.
+     * Else set bIsRuning to false and SetMaxSpeedd */
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerSetRun(bool bIsRuningVal);
 
+    /* Return a Normalized Axis from Base Aim Rotation */
     UFUNCTION(BlueprintCallable, BlueprintPure)
     float GetControlPitchRotation();
 
@@ -111,7 +115,7 @@ protected:
     //                                          PROTECTED FUNCTIONS                                                     *
     //*******************************************************************************************************************
 
-    /* Set bUseControllerRotationYaw to the Aiming Value */
+    /* Set bUseControllerRotationYaw to the Aiming Value and set bIsRuning to false */
     UFUNCTION(NetMulticast, Reliable, WithValidation)
     void MultiSetAiming(bool bIsAimingVal);
 
@@ -120,6 +124,8 @@ protected:
 
     // Called every frame
     virtual void Tick(float DeltaTime) override;
+
+    void WeaponReload();
 
     void UpdateCrouch(bool bIsCrouch, float DeltaTime);
 
@@ -141,17 +147,21 @@ protected:
     /* Update the MaxWalkSpeed */
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerSetMaxSpeed();
+    /* Update the MaxWalkSpeed */
     UFUNCTION(NetMulticast, Reliable, WithValidation)
     void MultiSetMaxSpeed(float MaxVel);
 
     /* Set value to CurrentVelocity */
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerSetVelocity();
+    /* Set value to CurrentVelocity */
     UFUNCTION(NetMulticast, Reliable, WithValidation)
     void MultiSetVelocity(FVector CurrentVel);
 
+    /* Update BWasJump */
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerSetJump();
+    /* Update BWasJump */
     UFUNCTION(NetMulticast, Reliable, WithValidation)
     void MultiSetJump(bool bJumpValue);
 

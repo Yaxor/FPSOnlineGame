@@ -15,6 +15,10 @@ class MAFIABATTLEGROUND_API AWeapon : public AActor
 {
     GENERATED_BODY()
 
+    friend class ASemiautomaticWeapon;
+    friend class AAutomaticWeapon;
+    friend class AShotgun;
+
 public:
     //!Constructor
     AWeapon();
@@ -81,6 +85,7 @@ public:
     FORCEINLINE FName                   GetWeaponSocket()         { return WeaponSocket; };
     FORCEINLINE float                   GetWeaponAimFOV()         { return AimFOV; };
     FORCEINLINE float                   GetWeaponInterpSpeedAim() { return AimInterSpeedAim; };
+    FORCEINLINE float                   GetCanReload()            { return CurrentAmmo != MaxAmmo; };
 
     //*******************************************************************************************************************
     //                                          PUBLIC FUNCTIONS                                                        *
@@ -89,13 +94,16 @@ public:
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerGiveToPayer(class ACharacter* Player);
 
+    /* Stop Fire and refill CurrentAmmo */
     void Reload();
 
+    /**/
     virtual void StartFire();
 
+    /* Call ClientStopFire() */
     virtual void StopFire();
 
-    /* Trace the world, from pawn eyes to creosshair location */
+    /* Trace the world, from pawn eyes to crosshair location */
     virtual void Fire();
 
 protected:
@@ -105,19 +113,31 @@ protected:
 
     virtual void BeginPlay() override;
 
+    /* Stop the Fire Timer */
+    UFUNCTION(Client, Reliable, WithValidation)
+    void ClientStopFire();
+
+    /* Call Fire() */
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerFire();
+
+    /* Call Reload(); */
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerReload();
 
+    /* Call MultiPlayImpactFX() */
     void PlayImpactFX(EPhysicalSurface SurfaceType, FVector ImpactPoint);
 
+    /* Call ClientPlayFireFX() */
     void PlayFireFX();
 
+    /* Play Impact FX in All Clients */
     UFUNCTION(NetMulticast, Reliable, WithValidation)
     void MultiPlayImpactFX(EPhysicalSurface SurfaceType, FVector ImpactPoint);
-    UFUNCTION(NetMulticast, Reliable, WithValidation)
-    void MultiPlayFireFX();
+
+    /* Play Shot FX in Client */
+    UFUNCTION(Client, Reliable, WithValidation)
+    void ClientPlayFireFX();
 
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
