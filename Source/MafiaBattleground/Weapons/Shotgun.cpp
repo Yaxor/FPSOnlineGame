@@ -115,6 +115,7 @@ void AShotgun::Fire()
                 }
 
                 PlayFireFX();
+                WeaponRecoil_Delay();
 
                 if (Hit.GetActor())
                 {

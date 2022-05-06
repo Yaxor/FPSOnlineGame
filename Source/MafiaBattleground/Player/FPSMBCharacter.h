@@ -26,11 +26,11 @@ protected:
     //                                          PROTECTED COMPONENTS AND VARIABLES                                      *
     //*******************************************************************************************************************
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+    class USpringArmComponent* SpringArm;
     /** FPS camera */
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
     class UCameraComponent* FPSCamera;
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-    class USpringArmComponent* SpringArm;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
     class USkeletalMeshComponent* ArmsMesh;
 
@@ -45,7 +45,6 @@ protected:
     UPROPERTY(Replicated,VisibleAnywhere)
     class AWeapon* CurrentWeapon = nullptr;
 
-    FVector ArmsAimLocation;
     FVector ArmsDefaultLocation;
     UPROPERTY(BlueprintReadOnly)
     FVector CurrentVelocity;
@@ -57,6 +56,7 @@ protected:
 
     uint8_t CurrentWeaponIndex;
 
+    float DefaultSpringArmLength;
     float DefaultFOV;
     UPROPERTY(EditDefaultsOnly, Category = Player);
     float DefaultMaxWalkSpeed;
@@ -84,15 +84,18 @@ public:
     /* Return true if it is a ListenerServer or false if it is a Client */
     FORCEINLINE bool GetIsServer() { return GetLocalRole() == ROLE_Authority && (GetRemoteRole() == ROLE_SimulatedProxy || GetRemoteRole() == ROLE_AutonomousProxy); };
 
-    FORCEINLINE USkeletalMeshComponent* GetArmsMesh()      { return ArmsMesh; };
-    FORCEINLINE bool                    GetIsDead()        { return bIsDead; };
-    FORCEINLINE bool                    GetIsAiming()      { return bIsAiming; }
-    FORCEINLINE UCameraComponent*       GetCamera()        { return FPSCamera; }
-    FORCEINLINE AWeapon*                GetCurrentWeapon() { return CurrentWeapon; }
+    FORCEINLINE USkeletalMeshComponent* GetArmsMesh()               { return ArmsMesh; };
+    FORCEINLINE FVector                 GetArmsAimDefaultLocation() { return ArmsDefaultLocation; };
+    FORCEINLINE bool                    GetIsDead()                 { return bIsDead; };
+    FORCEINLINE bool                    GetIsAiming()               { return bIsAiming; }
+    FORCEINLINE UCameraComponent*       GetCamera()                 { return FPSCamera; }
+    FORCEINLINE AWeapon*                GetCurrentWeapon()          { return CurrentWeapon; }
 
     //*******************************************************************************************************************
     //                                          PUBLIC FUNCTIONS                                                        *
     //*******************************************************************************************************************
+
+    void SetCameraToDefaultLocation();
 
     UFUNCTION(BlueprintImplementableEvent)
     void SetAimingCrosshair(bool bIsAimVal);
@@ -116,8 +119,8 @@ protected:
     //*******************************************************************************************************************
 
     /* Set bUseControllerRotationYaw to the Aiming Value and set bIsRuning to false */
-    UFUNCTION(NetMulticast, Reliable, WithValidation)
-    void MultiSetAiming(bool bIsAimingVal);
+    UFUNCTION(Client, Reliable, WithValidation)
+    void ClientSetAiming(bool bIsAimingVal);
 
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
@@ -129,10 +132,10 @@ protected:
 
     void UpdateCrouch(bool bIsCrouch, float DeltaTime);
 
-    void CheckInitialPlayerRefInController();
+    void CheckInitialPlayerRefInController_Delay();
     /* Set the MafiaBattlegroundCharacter reference into the MBGPlayerController */
     UFUNCTION()
-    void SetPlayerRefToController_Delay();
+    void SetPlayerRefToController();
 
     /* Spawn Default Weapon */
     UFUNCTION(Server, Reliable, WithValidation)

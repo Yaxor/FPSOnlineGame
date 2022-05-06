@@ -29,9 +29,11 @@ AFPSMBCharacter::AFPSMBCharacter()
     SpringArm = CreateDefaultSubobject<USpringArmComponent>("SpringArm");
     SpringArm->SetupAttachment(RootComponent);
     SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 70.0f));
-    SpringArm->TargetArmLength         = 50.0f;
-    SpringArm->bUsePawnControlRotation = true;
-    SpringArm->bEnableCameraLag        = false;
+    SpringArm->TargetArmLength          = 50.0f;
+    SpringArm->bUsePawnControlRotation  = true;
+    SpringArm->bEnableCameraLag         = false;
+    SpringArm->bEnableCameraRotationLag = true;
+    SpringArm->CameraRotationLagSpeed   = 80.0f;
 
     // Camera
     FPSCamera = CreateDefaultSubobject<UCameraComponent>("FPSCamera");
@@ -67,8 +69,6 @@ AFPSMBCharacter::AFPSMBCharacter()
     bUseControllerRotationYaw   = true;
     bUseControllerRotationRoll  = false;
 
-    ArmsAimLocation     = FVector(30.0f, -6.0f, -30.0f);
-    ArmsDefaultLocation = FVector(30.0f, 6.0f, -40.0f);
     CrouchSALocation    = FVector(0.0f, 0.0f, 40.0f);
     FoldWeaponLocation  = FVector(0.0f, 0.0f, -600.0f);
     CurrentWeaponIndex  = 0;
@@ -85,10 +85,23 @@ AFPSMBCharacter::AFPSMBCharacter()
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBCharacter::SetCameraToDefaultLocation()
+{
+    FPSCamera->AttachToComponent(SpringArm, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
 void AFPSMBCharacter::ServerSetAiming_Implementation(bool bIsAimingVal)
 {
     bIsAiming = bIsAimingVal;
-    MultiSetAiming(bIsAimingVal);
+    ClientSetAiming(bIsAimingVal);
+
+    if (CurrentWeapon)
+    {
+        CurrentWeapon->MultiAim(bIsAimingVal);
+    }
+
+    bIsAimingVal ? bIsRuning = false : NULL;
     ServerSetMaxSpeed();
 }
 
@@ -97,30 +110,13 @@ bool AFPSMBCharacter::ServerSetAiming_Validate(bool bIsAimingVal)
 {    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-void AFPSMBCharacter::MultiSetAiming_Implementation(bool bIsAimingVal)
+void AFPSMBCharacter::ClientSetAiming_Implementation(bool bIsAimingVal)
 {
-    if (CurrentWeapon)
-    {
-        if (bIsAimingVal)
-        {
-            FPSCamera->AttachToComponent(CurrentWeapon->GetGunMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("CameraAim"));
-            ArmsMesh->SetRelativeLocation(ArmsAimLocation);
-            FPSCamera->bUsePawnControlRotation = true;
-            bIsRuning = false;
-        }
-        else
-        {
-            FPSCamera->AttachToComponent(SpringArm, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-            ArmsMesh->SetRelativeLocation(ArmsDefaultLocation);
-            FPSCamera->bUsePawnControlRotation = false;
-        }
-    }
-
     SetAimingCrosshair(bIsAimingVal);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-bool AFPSMBCharacter::MultiSetAiming_Validate(bool bIsAimingVal)
+bool AFPSMBCharacter::ClientSetAiming_Validate(bool bIsAimingVal)
 {    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -160,12 +156,14 @@ void AFPSMBCharacter::BeginPlay()
 {
     Super::BeginPlay();
 
-    DefaultSALocation   = SpringArm->GetRelativeLocation();
-    DefaultFOV          = FPSCamera->FieldOfView;
-    DefaultMaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+    ArmsDefaultLocation    = ArmsMesh->GetRelativeLocation();
+    DefaultSALocation      = SpringArm->GetRelativeLocation();
+    DefaultSpringArmLength = SpringArm->TargetArmLength;
+    DefaultFOV             = FPSCamera->FieldOfView;
+    DefaultMaxWalkSpeed    = GetCharacterMovement()->MaxWalkSpeed;
 
     // Delays Functions
-    CheckInitialPlayerRefInController();
+    CheckInitialPlayerRefInController_Delay();
 
     if (IsLocallyControlled())
     {
@@ -183,6 +181,32 @@ void AFPSMBCharacter::Tick(float DeltaTime)
     ServerSetJump();
     ZoomInterp(DeltaTime);
     UpdateCrouch(GetCharacterMovement()->IsCrouching(), DeltaTime);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBCharacter::CheckInitialPlayerRefInController_Delay()
+{
+    FLatentActionInfo LatentInfo;
+    LatentInfo.CallbackTarget    = this;
+    LatentInfo.ExecutionFunction = FName("SetPlayerRefToController");
+    LatentInfo.Linkage           = 0;
+    LatentInfo.UUID              = 0;
+
+    UKismetSystemLibrary::Delay(GetWorld(), 0.1f, LatentInfo);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBCharacter::SetPlayerRefToController()
+{
+    APlayerController* PlayerController = Cast<APlayerController>(GetController());
+    if (PlayerController)
+    {
+        AFPSMBPlayerController* MBGPlayerController = Cast<AFPSMBPlayerController>(GetController());
+        if (MBGPlayerController)
+        {
+            MBGPlayerController->MyPlayerRef = this;
+        }
+    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -205,32 +229,6 @@ void AFPSMBCharacter::UpdateCrouch(bool bIsCrouch, float DeltaTime)
     const FVector NextLocation   = FMath::VInterpTo(SpringArm->GetRelativeLocation(), TargetLocation, DeltaTime, CrouchInterpSpeed);
 
     SpringArm->SetRelativeLocation(NextLocation);
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------
-void AFPSMBCharacter::CheckInitialPlayerRefInController()
-{
-    FLatentActionInfo LatentInfo;
-    LatentInfo.CallbackTarget    = this;
-    LatentInfo.ExecutionFunction = FName("SetPlayerRefToController_Delay");
-    LatentInfo.Linkage           = 0;
-    LatentInfo.UUID              = 0;
-
-    UKismetSystemLibrary::Delay(GetWorld(), 0.1f, LatentInfo);
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------
-void AFPSMBCharacter::SetPlayerRefToController_Delay()
-{
-    APlayerController* PlayerController = Cast<APlayerController>(GetController());
-    if (PlayerController)
-    {
-        AFPSMBPlayerController* MBGPlayerController = Cast<AFPSMBPlayerController>(GetController());
-        if (MBGPlayerController)
-        {
-            MBGPlayerController->MyPlayerRef = this;
-        }
-    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------

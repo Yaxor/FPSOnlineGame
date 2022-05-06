@@ -34,6 +34,7 @@ AWeapon::AWeapon()
 
     // Make other gunmesh for the other clients
 
+    ArmsAimLocation    = FVector(30.0f, -6.0f, -30.0f);
     WeaponSocket       = FName("WeaponSocket");
     MuzzleSocketName   = FName("MuzzleSocket");
     AimFOV             = 65.0f;
@@ -44,6 +45,7 @@ AWeapon::AWeapon()
     MaxAmmo            = 30;
     FireRate           = 600.0f;
     ShotDistance       = 10000.0f;
+    RecoilForce        = -0.5f;
 
     SetReplicates(true);
     SetReplicatingMovement(true);
@@ -71,6 +73,33 @@ void AWeapon::ServerGiveToPayer_Implementation(class ACharacter* Player)
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 bool AWeapon::ServerGiveToPayer_Validate(class ACharacter* Player)
+{    return true;}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::MultiAim_Implementation(bool bAimingVal)
+{
+    AActor* MyOwner = GetOwner();
+    AFPSMBCharacter* MyFPSPlayer = CastChecked<AFPSMBCharacter>(GetOwner());
+
+    if (MyFPSPlayer)
+    {
+        if (bAimingVal)
+        {
+            MyFPSPlayer->GetCamera()->AttachToComponent(GunMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("CameraAim"));
+            MyFPSPlayer->GetArmsMesh()->SetRelativeLocation(ArmsAimLocation);
+            MyFPSPlayer->GetCamera()->bUsePawnControlRotation = true;
+        }
+        else
+        {
+            MyFPSPlayer->SetCameraToDefaultLocation();
+            MyFPSPlayer->GetArmsMesh()->SetRelativeLocation(MyFPSPlayer->GetArmsAimDefaultLocation());
+            MyFPSPlayer->GetCamera()->bUsePawnControlRotation = false;
+        }
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AWeapon::MultiAim_Validate(bool bAimingVal)
 {    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -191,6 +220,7 @@ void AWeapon::Fire()
         }
 
         PlayFireFX();
+        WeaponRecoil_Delay();
 
         if (Hit.GetActor())
         {
@@ -289,6 +319,36 @@ void AWeapon::ClientPlayFireFX_Implementation()
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 bool AWeapon::ClientPlayFireFX_Validate()
+{    return true;}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::WeaponRecoil_Delay()
+{
+    FLatentActionInfo LatentInfo;
+    LatentInfo.CallbackTarget    = this;
+    LatentInfo.ExecutionFunction = FName("ClientWeaponRecoil");
+    LatentInfo.Linkage           = 0;
+    LatentInfo.UUID              = 0;
+
+    UKismetSystemLibrary::Delay(GetWorld(), 0.06f, LatentInfo);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::ClientWeaponRecoil_Implementation()
+{
+    APawn* MyOwner = Cast<APawn>(GetOwner());
+    if (MyOwner)
+    {
+        APlayerController* PlayerController = Cast<APlayerController>(MyOwner->GetController());
+        if (PlayerController)
+        {
+            PlayerController->AddPitchInput(RecoilForce);
+        }
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AWeapon::ClientWeaponRecoil_Validate()
 {    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------

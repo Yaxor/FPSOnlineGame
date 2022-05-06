@@ -51,6 +51,9 @@ protected:
 
     FTimerHandle TimerHandle_Fire;
 
+    UPROPERTY(EditDefaultsOnly, Category = Weapon)
+    FVector ArmsAimLocation;
+
     UPROPERTY(Replicated)
     uint8 CurrentAmmo;
     UPROPERTY(EditDefaultsOnly, Category = Weapon)
@@ -72,6 +75,8 @@ protected:
     float ShotDistance;
     UPROPERTY(EditDefaultsOnly, Category = Weapon)
     float HeadshotMultiplier;
+    UPROPERTY(EditDefaultsOnly, Category = Weapon)
+    float RecoilForce;
 
 public:
     //*******************************************************************************************************************
@@ -93,6 +98,9 @@ public:
 
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerGiveToPayer(class ACharacter* Player);
+
+    UFUNCTION(NetMulticast, Reliable, WithValidation)
+    virtual void MultiAim(bool bAimingVal);
 
     /* Stop Fire and refill CurrentAmmo */
     void Reload();
@@ -138,6 +146,11 @@ protected:
     /* Play Shot FX in Client */
     UFUNCTION(Client, Reliable, WithValidation)
     void ClientPlayFireFX();
+
+    void WeaponRecoil_Delay();
+
+    UFUNCTION(Client, Reliable, WithValidation)
+    void ClientWeaponRecoil();
 
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
