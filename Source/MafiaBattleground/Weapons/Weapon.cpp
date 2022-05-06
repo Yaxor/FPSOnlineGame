@@ -221,7 +221,11 @@ void AWeapon::Fire()
         }
 
         PlayFireFX();
-        WeaponRecoil_Delay();
+
+        if (MyFPSPlayer->GetIsAiming())
+        {
+            WeaponRecoil_Delay();
+        }
 
         if (Hit.GetActor())
         {

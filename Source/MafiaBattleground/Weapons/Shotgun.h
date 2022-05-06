@@ -29,7 +29,10 @@ protected:
     UPROPERTY(EditDefaultsOnly, Category = Weapon)
     float AimSpreadBoost;
 
+    UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
     bool bHasTriggered;
+
+    FTimerHandle TimerHandle_ResetTrigger;
 
 public:
     //*******************************************************************************************************************
@@ -37,6 +40,14 @@ public:
     //*******************************************************************************************************************
 
     virtual void StartFire() override;
-    virtual void StopFire() override;
     virtual void Fire() override;
+
+protected:
+    //*******************************************************************************************************************
+    //                                          PROTECTED FUNCTIONS                                                     *
+    //*******************************************************************************************************************
+
+    void ResetTrigger();
+
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

@@ -2,6 +2,7 @@
 
 
 #include "Shotgun.h"
+#include "Net/UnrealNetwork.h"
 
 #include "Camera/CameraComponent.h"
 
@@ -18,6 +19,7 @@ AShotgun::AShotgun()
     BulletSpread   = 8.0f;
     AimSpreadBoost = 4.0f;
     Pellets        = 8;
+    FireRate       = 9.0f;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -29,20 +31,10 @@ void AShotgun::StartFire()
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-void AShotgun::StopFire()
-{
-    Super::StopFire();
-
-    bHasTriggered = false;
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------
 void AShotgun::Fire()
 {
     if (!bHasTriggered)
     {
-        GetWorldTimerManager().SetTimer(TimerHandle_Fire, this, &AShotgun::StopFire, Cadence, false);
-
         if (CurrentAmmo <= 0)
         {
             return;
@@ -53,6 +45,8 @@ void AShotgun::Fire()
             ServerFire();
             return;
         }
+
+        GetWorldTimerManager().SetTimer(TimerHandle_ResetTrigger, this, &AShotgun::ResetTrigger, Cadence, false);
 
         AActor* MyOwner = GetOwner();
         AFPSMBCharacter* MyFPSPlayer = CastChecked<AFPSMBCharacter>(GetOwner());
@@ -115,19 +109,33 @@ void AShotgun::Fire()
                 }
 
                 PlayFireFX();
-                WeaponRecoil_Delay();
+
+                if (MyFPSPlayer->GetIsAiming())
+                {
+                    WeaponRecoil_Delay();
+                }
 
                 if (Hit.GetActor())
                 {
                     PlayImpactFX(SurfaceType, TraceEndPoint);
                 }
             }
-
-            LastFireTime = GetWorld()->TimeSeconds;
-
-            // Por cada tiro rotar un poco el arma hacia arriba o sumarle un poco de altura al EndLocation a la direccion
         }
 
         bHasTriggered = true;
     }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AShotgun::ResetTrigger()
+{
+    bHasTriggered = false;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AShotgun::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+    DOREPLIFETIME(AShotgun, bHasTriggered);
 }

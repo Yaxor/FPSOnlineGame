@@ -184,7 +184,6 @@ void AFPSMBPlayerController::ReloadWeapon()
     {
         if (!MyPlayerRef->GetIsDead() && MyPlayerRef->GetCurrentWeapon())
         {
-            //MyPlayerRef->GetCurrentWeapon()->Reload();
             MyPlayerRef->WeaponReload();
         }
     }
