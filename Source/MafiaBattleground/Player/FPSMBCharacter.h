@@ -90,12 +90,11 @@ public:
     FORCEINLINE bool                    GetIsAiming()               { return bIsAiming; }
     FORCEINLINE UCameraComponent*       GetCamera()                 { return FPSCamera; }
     FORCEINLINE AWeapon*                GetCurrentWeapon()          { return CurrentWeapon; }
+    FORCEINLINE USpringArmComponent*    GetSpringArm()              { return SpringArm; }
 
     //*******************************************************************************************************************
     //                                          PUBLIC FUNCTIONS                                                        *
     //*******************************************************************************************************************
-
-    void SetCameraToDefaultLocation();
 
     UFUNCTION(BlueprintImplementableEvent)
     void SetAimingCrosshair(bool bIsAimVal);

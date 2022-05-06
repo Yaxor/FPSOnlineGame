@@ -85,12 +85,6 @@ AFPSMBCharacter::AFPSMBCharacter()
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-void AFPSMBCharacter::SetCameraToDefaultLocation()
-{
-    FPSCamera->AttachToComponent(SpringArm, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------
 void AFPSMBCharacter::ServerSetAiming_Implementation(bool bIsAimingVal)
 {
     bIsAiming = bIsAimingVal;

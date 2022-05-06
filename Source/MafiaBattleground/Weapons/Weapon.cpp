@@ -9,6 +9,7 @@
 #include "Net/UnrealNetwork.h"
 
 #include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
@@ -91,7 +92,7 @@ void AWeapon::MultiAim_Implementation(bool bAimingVal)
         }
         else
         {
-            MyFPSPlayer->SetCameraToDefaultLocation();
+            MyFPSPlayer->GetCamera()->AttachToComponent(MyFPSPlayer->GetSpringArm(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
             MyFPSPlayer->GetArmsMesh()->SetRelativeLocation(MyFPSPlayer->GetArmsAimDefaultLocation());
             MyFPSPlayer->GetCamera()->bUsePawnControlRotation = false;
         }
