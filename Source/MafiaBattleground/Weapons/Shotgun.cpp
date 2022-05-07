@@ -20,6 +20,7 @@ AShotgun::AShotgun()
     AimSpreadBoost = 4.0f;
     Pellets        = 8;
     FireRate       = 9.0f;
+    RecoilForce    = 4.0f;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -130,6 +131,20 @@ void AShotgun::Fire()
 void AShotgun::ResetTrigger()
 {
     bHasTriggered = false;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AShotgun::CustomWeaponRecoil()
+{
+    APawn* MyOwner = Cast<APawn>(GetOwner());
+    if (MyOwner)
+    {
+        APlayerController* PlayerController = Cast<APlayerController>(MyOwner->GetController());
+        if (PlayerController)
+        {
+            PlayerController->AddPitchInput(RecoilForce);
+        }
+    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------

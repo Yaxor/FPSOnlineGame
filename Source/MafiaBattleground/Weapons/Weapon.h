@@ -121,6 +121,11 @@ protected:
 
     virtual void BeginPlay() override;
 
+    UFUNCTION(BlueprintImplementableEvent)
+    void WeaponRecoil();
+    UFUNCTION(BlueprintImplementableEvent)
+    void StopWeaponRecoil();
+
     /* Stop the Fire Timer */
     UFUNCTION(Client, Reliable, WithValidation)
     void ClientStopFire();
@@ -129,28 +134,30 @@ protected:
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerFire();
 
-    /* Call Reload(); */
-    UFUNCTION(Server, Reliable, WithValidation)
-    void ServerReload();
+    void WeaponRecoil_Delay();
+
+    UFUNCTION(Client, Reliable, WithValidation)
+    void ClientWeaponRecoil();
+
+    virtual void CustomWeaponRecoil();
 
     /* Call MultiPlayImpactFX() */
     void PlayImpactFX(EPhysicalSurface SurfaceType, FVector ImpactPoint);
-
-    /* Call ClientPlayFireFX() */
-    void PlayFireFX();
 
     /* Play Impact FX in All Clients */
     UFUNCTION(NetMulticast, Reliable, WithValidation)
     void MultiPlayImpactFX(EPhysicalSurface SurfaceType, FVector ImpactPoint);
 
+    /* Call ClientPlayFireFX() */
+    void PlayFireFX();
+
     /* Play Shot FX in Client */
     UFUNCTION(Client, Reliable, WithValidation)
     void ClientPlayFireFX();
 
-    void WeaponRecoil_Delay();
-
-    UFUNCTION(Client, Reliable, WithValidation)
-    void ClientWeaponRecoil();
+    /* Call Reload(); */
+    UFUNCTION(Server, Reliable, WithValidation)
+    void ServerReload();
 
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

@@ -32,8 +32,7 @@ AFPSMBCharacter::AFPSMBCharacter()
     SpringArm->TargetArmLength          = 50.0f;
     SpringArm->bUsePawnControlRotation  = true;
     SpringArm->bEnableCameraLag         = false;
-    SpringArm->bEnableCameraRotationLag = true;
-    SpringArm->CameraRotationLagSpeed   = 80.0f;
+    SpringArm->bEnableCameraRotationLag = false;
 
     // Camera
     FPSCamera = CreateDefaultSubobject<UCameraComponent>("FPSCamera");

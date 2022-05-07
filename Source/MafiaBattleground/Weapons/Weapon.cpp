@@ -46,7 +46,6 @@ AWeapon::AWeapon()
     MaxAmmo            = 30;
     FireRate           = 600.0f;
     ShotDistance       = 10000.0f;
-    RecoilForce        = -0.5f;
 
     SetReplicates(true);
     SetReplicatingMovement(true);
@@ -143,6 +142,7 @@ void AWeapon::BeginPlay()
 void AWeapon::ClientStopFire_Implementation()
 {
     GetWorldTimerManager().ClearTimer(TimerHandle_Fire);
+    StopWeaponRecoil();
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -154,6 +154,7 @@ void AWeapon::Fire()
 {
     if (CurrentAmmo <= 0)
     {
+        StopWeaponRecoil();
         return;
     }
 
@@ -224,7 +225,7 @@ void AWeapon::Fire()
 
         if (MyFPSPlayer->GetIsAiming())
         {
-            WeaponRecoil_Delay();
+            ClientWeaponRecoil();
         }
 
         if (Hit.GetActor())
@@ -249,25 +250,37 @@ bool AWeapon::ServerFire_Validate()
 {    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-void AWeapon::ServerReload_Implementation()
+void AWeapon::WeaponRecoil_Delay()
 {
-    Reload();
+    FLatentActionInfo LatentInfo;
+    LatentInfo.CallbackTarget = this;
+    LatentInfo.ExecutionFunction = FName("ClientWeaponRecoil");
+    LatentInfo.Linkage = 0;
+    LatentInfo.UUID = 0;
+
+    UKismetSystemLibrary::Delay(GetWorld(), 0.06f, LatentInfo);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-bool AWeapon::ServerReload_Validate()
+void AWeapon::ClientWeaponRecoil_Implementation()
+{
+    CustomWeaponRecoil();
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AWeapon::ClientWeaponRecoil_Validate()
 {    return true;}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::CustomWeaponRecoil()
+{
+    WeaponRecoil();
+}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::PlayImpactFX(EPhysicalSurface SurfaceType, FVector ImpactPoint)
 {
     MultiPlayImpactFX(SurfaceType, ImpactPoint);
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------
-void AWeapon::PlayFireFX()
-{
-    ClientPlayFireFX();
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -296,6 +309,12 @@ void AWeapon::MultiPlayImpactFX_Implementation(EPhysicalSurface SurfaceType, FVe
 //------------------------------------------------------------------------------------------------------------------------------------------
 bool AWeapon::MultiPlayImpactFX_Validate(EPhysicalSurface SurfaceType, FVector ImpactPoint)
 {    return true;}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::PlayFireFX()
+{
+    ClientPlayFireFX();
+}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::ClientPlayFireFX_Implementation()
@@ -327,33 +346,13 @@ bool AWeapon::ClientPlayFireFX_Validate()
 {    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-void AWeapon::WeaponRecoil_Delay()
+void AWeapon::ServerReload_Implementation()
 {
-    FLatentActionInfo LatentInfo;
-    LatentInfo.CallbackTarget    = this;
-    LatentInfo.ExecutionFunction = FName("ClientWeaponRecoil");
-    LatentInfo.Linkage           = 0;
-    LatentInfo.UUID              = 0;
-
-    UKismetSystemLibrary::Delay(GetWorld(), 0.06f, LatentInfo);
+    Reload();
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-void AWeapon::ClientWeaponRecoil_Implementation()
-{
-    APawn* MyOwner = Cast<APawn>(GetOwner());
-    if (MyOwner)
-    {
-        APlayerController* PlayerController = Cast<APlayerController>(MyOwner->GetController());
-        if (PlayerController)
-        {
-            PlayerController->AddPitchInput(RecoilForce);
-        }
-    }
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------
-bool AWeapon::ClientWeaponRecoil_Validate()
+bool AWeapon::ServerReload_Validate()
 {    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
