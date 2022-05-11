@@ -51,10 +51,10 @@ void AFPSMBPlayerController::SetupInputComponent()
     InputComponent->BindAxis("MoveForward", this, &AFPSMBPlayerController::MoveForward);
     InputComponent->BindAxis("MoveRight"  , this, &AFPSMBPlayerController::MoveRight);
 
-    InputComponent->BindAxis("Turn"      , this, &AFPSMBPlayerController::AddControllerYawInput);
-    InputComponent->BindAxis("LookUp"    , this, &AFPSMBPlayerController::AddControllerPitchInput);
-    InputComponent->BindAxis("TurnRate"  , this, &AFPSMBPlayerController::TurnAtRate);
-    InputComponent->BindAxis("LookUpRate", this, &AFPSMBPlayerController::LookUpAtRate);
+    InputComponent->BindAxis("Turn"      , this, &AFPSMBPlayerController::AddControllerYawInput); // Mouse X
+    InputComponent->BindAxis("LookUp"    , this, &AFPSMBPlayerController::AddControllerPitchInput); // Mouse Y
+    InputComponent->BindAxis("TurnRate"  , this, &AFPSMBPlayerController::TurnAtRate); // Gamepad
+    InputComponent->BindAxis("LookUpRate", this, &AFPSMBPlayerController::LookUpAtRate); // Gamepad
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -229,12 +229,14 @@ void AFPSMBPlayerController::MoveRight(float Value)
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AFPSMBPlayerController::AddControllerYawInput(float Value)
 {
+    //AddYawInput(Value * Sensitivity); // Sensitivity es un float que modifico en el menu de pausa
     AddYawInput(Value);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AFPSMBPlayerController::AddControllerPitchInput(float Value)
 {
+    //AddPitchInput(Value * Sensitivity);
     AddPitchInput(Value);
 }
 
