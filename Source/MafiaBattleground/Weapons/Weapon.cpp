@@ -94,6 +94,7 @@ void AWeapon::MultiAim_Implementation(bool bAimingVal)
             MyFPSPlayer->GetCamera()->AttachToComponent(MyFPSPlayer->GetSpringArm(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
             MyFPSPlayer->GetArmsMesh()->SetRelativeLocation(MyFPSPlayer->GetArmsAimDefaultLocation());
             MyFPSPlayer->GetCamera()->bUsePawnControlRotation = false;
+            StopWeaponRecoil();
         }
     }
 }
