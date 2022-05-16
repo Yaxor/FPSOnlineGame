@@ -274,6 +274,7 @@ void AFPSMBCharacter::ChangeWeapon(uint8_t WeaponIndex)
     {
         if (Weapon == Weapons[CurrentWeaponIndex])
         {
+            Weapon->AttachToActor(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
             Weapon->ServerGiveToPayer(this);
             continue;
         }
@@ -281,6 +282,8 @@ void AFPSMBCharacter::ChangeWeapon(uint8_t WeaponIndex)
         //GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("CHANGE WEAPON"));
         Weapon->GetGunMesh()->SetWorldLocation(FoldWeaponLocation);
         Weapon->GetGunMesh()->SetWorldRotation(FRotator::ZeroRotator);
+        Weapon->GetClientsGunMesh()->SetWorldLocation(FoldWeaponLocation);
+        Weapon->GetClientsGunMesh()->SetWorldRotation(FRotator::ZeroRotator);
         Weapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
     }
 }

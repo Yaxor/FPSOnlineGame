@@ -34,18 +34,21 @@ AWeapon::AWeapon()
     GunMesh->bOnlyOwnerSee = true;
 
     // Make other gunmesh for the other clients
+    ClientsGunMesh = CreateDefaultSubobject<USkeletalMeshComponent>("ClientsGunMesh");
+    ClientsGunMesh->bOwnerNoSee = true;
 
-    ArmsAimLocation    = FVector(30.0f, -6.0f, -30.0f);
-    WeaponSocket       = FName("WeaponSocket");
-    MuzzleSocketName   = FName("MuzzleSocket");
-    AimFOV             = 65.0f;
-    AimInterSpeedAim   = 22.0f;
-    BaseDamage         = 20.0f;
-    BulletSpread       = 2.0f;
-    HeadshotMultiplier = 2.5f;
-    MaxAmmo            = 30;
-    FireRate           = 600.0f;
-    ShotDistance       = 10000.0f;
+    ArmsAimLocation     = FVector(30.0f, -6.0f, -30.0f);
+    WeaponSocket        = FName("WeaponSocket");
+    ClientsWeaponSocket = FName("WeaponSocket");
+    MuzzleSocketName    = FName("MuzzleSocket");
+    AimFOV              = 65.0f;
+    AimInterSpeedAim    = 22.0f;
+    BaseDamage          = 20.0f;
+    BulletSpread        = 2.0f;
+    HeadshotMultiplier  = 2.5f;
+    MaxAmmo             = 30;
+    FireRate            = 600.0f;
+    ShotDistance        = 10000.0f;
 
     SetReplicates(true);
     SetReplicatingMovement(true);
@@ -64,10 +67,14 @@ void AWeapon::ServerGiveToPayer_Implementation(class ACharacter* Player)
         if (MyFPSPlayer)
         {
             GunMesh->AttachToComponent(MyFPSPlayer->GetArmsMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
+            ClientsGunMesh->SetRelativeLocation(FVector::ZeroVector);
+            ClientsGunMesh->SetRelativeRotation(FRotator::ZeroRotator);
+            ClientsGunMesh->AttachToComponent(MyFPSPlayer->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, ClientsWeaponSocket);
             return;
         }
 
         GunMesh->AttachToComponent(Player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
+        ClientsGunMesh->AttachToComponent(MyFPSPlayer->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, ClientsWeaponSocket);
     }
 }
 

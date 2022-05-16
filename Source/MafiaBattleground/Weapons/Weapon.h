@@ -30,6 +30,8 @@ protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
     class USkeletalMeshComponent* GunMesh;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
+    class USkeletalMeshComponent* ClientsGunMesh;
 
     UPROPERTY(EditDefaultsOnly, Category = Weapon)
     TSubclassOf<class UCameraShakeBase> FireCamShake;
@@ -46,6 +48,8 @@ protected:
 
     UPROPERTY(EditDefaultsOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
     FName WeaponSocket;
+    UPROPERTY(EditDefaultsOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
+    FName ClientsWeaponSocket;
     UPROPERTY()
     FName MuzzleSocketName;
 
@@ -87,6 +91,7 @@ public:
     FORCEINLINE bool GetIsServer() { return GetLocalRole() == ROLE_Authority && (GetRemoteRole() == ROLE_SimulatedProxy || GetRemoteRole() == ROLE_AutonomousProxy); };
 
     FORCEINLINE USkeletalMeshComponent* GetGunMesh()              { return GunMesh; };
+    FORCEINLINE USkeletalMeshComponent* GetClientsGunMesh()       { return ClientsGunMesh; };
     FORCEINLINE FName                   GetWeaponSocket()         { return WeaponSocket; };
     FORCEINLINE float                   GetWeaponAimFOV()         { return AimFOV; };
     FORCEINLINE float                   GetWeaponInterpSpeedAim() { return AimInterSpeedAim; };
