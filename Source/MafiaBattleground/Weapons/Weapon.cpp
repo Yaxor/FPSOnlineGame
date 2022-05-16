@@ -235,8 +235,6 @@ void AWeapon::Fire()
         }
 
         LastFireTime = GetWorld()->TimeSeconds;
-
-        // Por cada tiro rotar un poco el arma hacia arriba o sumarle un poco de altura al EndLocation a la direccion
     }
 }
 
@@ -275,7 +273,7 @@ bool AWeapon::ClientWeaponRecoil_Validate()
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::CustomWeaponRecoil()
 {
-    WeaponRecoil();
+    WeaponRecoil(); // Blueprint Event
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
