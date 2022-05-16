@@ -84,10 +84,11 @@ public:
     /* Return true if it is a ListenerServer or false if it is a Client */
     FORCEINLINE bool GetIsServer() { return GetLocalRole() == ROLE_Authority && (GetRemoteRole() == ROLE_SimulatedProxy || GetRemoteRole() == ROLE_AutonomousProxy); };
 
+    UFUNCTION(BlueprintCallable)
+    FORCEINLINE bool                    GetIsAiming()               { return bIsAiming; }
     FORCEINLINE USkeletalMeshComponent* GetArmsMesh()               { return ArmsMesh; };
     FORCEINLINE FVector                 GetArmsAimDefaultLocation() { return ArmsDefaultLocation; };
     FORCEINLINE bool                    GetIsDead()                 { return bIsDead; };
-    FORCEINLINE bool                    GetIsAiming()               { return bIsAiming; }
     FORCEINLINE UCameraComponent*       GetCamera()                 { return FPSCamera; }
     FORCEINLINE AWeapon*                GetCurrentWeapon()          { return CurrentWeapon; }
     FORCEINLINE USpringArmComponent*    GetSpringArm()              { return SpringArm; }

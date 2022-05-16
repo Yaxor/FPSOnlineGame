@@ -111,10 +111,7 @@ void AShotgun::Fire()
 
                 PlayFireFX();
 
-                if (MyFPSPlayer->GetIsAiming())
-                {
-                    WeaponRecoil_Delay();
-                }
+                ClientWeaponRecoil();
 
                 if (Hit.GetActor())
                 {
@@ -134,18 +131,18 @@ void AShotgun::ResetTrigger()
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-void AShotgun::CustomWeaponRecoil()
-{
-    APawn* MyOwner = Cast<APawn>(GetOwner());
-    if (MyOwner)
-    {
-        APlayerController* PlayerController = Cast<APlayerController>(MyOwner->GetController());
-        if (PlayerController)
-        {
-            PlayerController->AddPitchInput(RecoilForce);
-        }
-    }
-}
+//void AShotgun::CustomWeaponRecoil()
+//{
+//    APawn* MyOwner = Cast<APawn>(GetOwner());
+//    if (MyOwner)
+//    {
+//        APlayerController* PlayerController = Cast<APlayerController>(MyOwner->GetController());
+//        if (PlayerController)
+//        {
+//            PlayerController->AddPitchInput(RecoilForce);
+//        }
+//    }
+//}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AShotgun::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
