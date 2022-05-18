@@ -33,6 +33,13 @@ protected:
     class UCameraComponent* FPSCamera;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
     class USkeletalMeshComponent* ArmsMesh;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+    class USkeletalMeshComponent* FootsMesh;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+    class USkeletalMeshComponent* ShadowMesh;
+
+    UPROPERTY(EditDefaultsOnly, Category = RenderPlayer)
+    FName HipBoneName;
 
     UPROPERTY(EditDefaultsOnly, Category = Player)
     TSubclassOf<class AWeapon> AK47;

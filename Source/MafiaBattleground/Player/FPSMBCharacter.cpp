@@ -45,6 +45,23 @@ AFPSMBCharacter::AFPSMBCharacter()
     ArmsMesh->SetRelativeLocation(FVector(30.0f, 6.0f, -40.0f));
     ArmsMesh->SetRelativeRotation(FRotator(-10.0f, -89.0f, 92.0f));
     ArmsMesh->bOnlyOwnerSee = true;
+    ArmsMesh->CastShadow    = false;
+
+    // Foots mesh
+    FootsMesh = CreateDefaultSubobject<USkeletalMeshComponent>("FootsMesh");
+    FootsMesh->SetupAttachment(RootComponent);
+    FootsMesh->SetRelativeLocation(FVector(-70.0f, 0.0f, -90.0f));
+    FootsMesh->SetRelativeRotation(FRotator(0.0, -90.0f, 0.0f));
+    FootsMesh->bOnlyOwnerSee     = true;
+    FootsMesh->CastShadow        = false;
+
+    // Body Shadow
+    ShadowMesh = CreateDefaultSubobject<USkeletalMeshComponent>("ShadowMesh");
+    ShadowMesh->SetupAttachment(RootComponent);
+    ShadowMesh->SetRelativeLocation(FVector(-70.0f, 0.0f, -90.0f));
+    ShadowMesh->SetRelativeRotation(FRotator(0.0, -90.0f, 0.0f));
+    ShadowMesh->bOnlyOwnerSee     = true;
+    ShadowMesh->bRenderInMainPass = false;
 
     // Capsule
     GetCapsuleComponent()->InitCapsuleSize(36.0f, 92.0f);
@@ -68,6 +85,7 @@ AFPSMBCharacter::AFPSMBCharacter()
     bUseControllerRotationYaw   = true;
     bUseControllerRotationRoll  = false;
 
+    HipBoneName         = FName("spine_01");
     CrouchSALocation    = FVector(0.0f, 0.0f, 40.0f);
     FoldWeaponLocation  = FVector(0.0f, 0.0f, -600.0f);
     CurrentWeaponIndex  = 0;
@@ -154,6 +172,8 @@ void AFPSMBCharacter::BeginPlay()
     DefaultSpringArmLength = SpringArm->TargetArmLength;
     DefaultFOV             = FPSCamera->FieldOfView;
     DefaultMaxWalkSpeed    = GetCharacterMovement()->MaxWalkSpeed;
+
+    FootsMesh->HideBoneByName(HipBoneName, EPhysBodyOp::PBO_None);
 
     // Delays Functions
     CheckInitialPlayerRefInController_Delay();

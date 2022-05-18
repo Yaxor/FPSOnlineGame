@@ -1,4 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+//+--------------------------------------------------------+
+//| Project    : MafiaBattleground                         |
+//| UE Version : 4.27                                      |
+//| Author     : Matias Till                               |
+//+--------------------------------------------------------+
 
 #pragma once
 

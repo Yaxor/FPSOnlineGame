@@ -1,4 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+//+--------------------------------------------------------+
+//| Project    : MafiaBattleground                         |
+//| UE Version : 4.27                                      |
+//| Author     : Matias Till                               |
+//+--------------------------------------------------------+
 
 
 #include "Shotgun.h"
@@ -8,9 +12,15 @@
 
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
 
 #include "MafiaBattleground/Player/FPSMBCharacter.h"
 #include "MafiaBattleground/MafiaBattleground.h"
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+static int32 DebugWeaponDrawingShotG = 0;
+FAutoConsoleVariableRef CVARDebugWeaponDrawingShotG(TEXT("Mafia.DebugWeaponsShotG"), DebugWeaponDrawingShotG,
+                                                    TEXT("Draw Debug Lines for Weapons"), ECVF_Cheat);
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 AShotgun::AShotgun()
@@ -55,8 +65,9 @@ void AShotgun::Fire()
         if (MyOwner && MyFPSPlayer && GetIsServer()) // (GetLocalRole() == ROLE_Authority))
         {
             CurrentAmmo--;
+            ShotsCounterFireFX++;
 
-            const FVector& StartLocation = MyFPSPlayer->GetCamera()->GetComponentLocation();
+            const FVector& StartLocation = GunMesh->GetSocketLocation(AimShotSocket);
             const FRotator& AimRotation  = MyFPSPlayer->GetBaseAimRotation();
 
             FVector ShotDirection = AimRotation.Vector();
@@ -109,6 +120,11 @@ void AShotgun::Fire()
                     TraceEndPoint = Hit.ImpactPoint;
                 }
 
+                if (DebugWeaponDrawingShotG > 0)
+                {
+                    DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1.0f, 0, 1.0f);
+                }
+
                 PlayFireFX();
 
                 ClientWeaponRecoil();
@@ -129,20 +145,6 @@ void AShotgun::ResetTrigger()
 {
     bHasTriggered = false;
 }
-
-//------------------------------------------------------------------------------------------------------------------------------------------
-//void AShotgun::CustomWeaponRecoil()
-//{
-//    APawn* MyOwner = Cast<APawn>(GetOwner());
-//    if (MyOwner)
-//    {
-//        APlayerController* PlayerController = Cast<APlayerController>(MyOwner->GetController());
-//        if (PlayerController)
-//        {
-//            PlayerController->AddPitchInput(RecoilForce);
-//        }
-//    }
-//}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AShotgun::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

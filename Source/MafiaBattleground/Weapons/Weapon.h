@@ -46,12 +46,16 @@ protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Weapon)
     UParticleSystem* MuzzleVFX;
 
-    UPROPERTY(EditDefaultsOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
-    FName WeaponSocket;
+    UPROPERTY()
+    FName AimShotSocket;
     UPROPERTY(EditDefaultsOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
     FName ClientsWeaponSocket;
     UPROPERTY()
     FName MuzzleSocketName;
+    UPROPERTY()
+    FName MuzzleSocketNameOthers;
+    UPROPERTY(EditDefaultsOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
+    FName WeaponSocket;
 
     FTimerHandle TimerHandle_Fire;
 
@@ -62,6 +66,9 @@ protected:
     uint8 CurrentAmmo;
     UPROPERTY(EditDefaultsOnly, Category = Weapon)
     uint8 MaxAmmo;
+    /* Using for play shot FX */
+    UPROPERTY(ReplicatedUsing = OnRep_OthersPlayFireFX)
+    uint8 ShotsCounterFireFX;
 
     UPROPERTY(EditDefaultsOnly, Category = Weapon)
     float AimFOV;
@@ -156,9 +163,20 @@ protected:
     /* Call ClientPlayFireFX() */
     void PlayFireFX();
 
-    /* Play Shot FX in Client */
+    /* Play Shot FX in Client & if is not the server call ServerPlayFireFX */
     UFUNCTION(Client, Reliable, WithValidation)
     void ClientPlayFireFX();
+
+    /* Play Fire FX in the ClientsWeaponMesh */
+    void OthersPlayersFireFX();
+
+    /* Call OthersPlayersFireFX */
+    UFUNCTION(Server, Reliable, WithValidation)
+    void ServerPlayFireFX();
+
+    /* Call OthersPlayersFireFX in the others clients, SkipOwner */
+    UFUNCTION()
+    void OnRep_OthersPlayFireFX();
 
     /* Call Reload(); */
     UFUNCTION(Server, Reliable, WithValidation)
