@@ -87,6 +87,7 @@ AFPSMBCharacter::AFPSMBCharacter()
 
     HipBoneName         = FName("spine_01");
     CrouchSALocation    = FVector(0.0f, 0.0f, 40.0f);
+    CrouchFootsLocation = FVector(-70.0f, 0.0f, -60.0f);
     FoldWeaponLocation  = FVector(0.0f, 0.0f, -600.0f);
     CurrentWeaponIndex  = 0;
     CrouchInterpSpeed   = 10.0f;
@@ -168,6 +169,7 @@ void AFPSMBCharacter::BeginPlay()
     Super::BeginPlay();
 
     ArmsDefaultLocation    = ArmsMesh->GetRelativeLocation();
+    DefaultFootsLocation   = FootsMesh->GetRelativeLocation();
     DefaultSALocation      = SpringArm->GetRelativeLocation();
     DefaultSpringArmLength = SpringArm->TargetArmLength;
     DefaultFOV             = FPSCamera->FieldOfView;
@@ -238,9 +240,12 @@ void AFPSMBCharacter::WeaponReload()
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AFPSMBCharacter::UpdateCrouch(bool bIsCrouch, float DeltaTime)
 {
+    const FVector NextFootsLocation = bIsCrouch ? CrouchFootsLocation : DefaultFootsLocation;
+
     const FVector TargetLocation = bIsCrouch ? CrouchSALocation : DefaultSALocation;
     const FVector NextLocation   = FMath::VInterpTo(SpringArm->GetRelativeLocation(), TargetLocation, DeltaTime, CrouchInterpSpeed);
 
+    FootsMesh->SetRelativeLocation(NextFootsLocation);
     SpringArm->SetRelativeLocation(NextLocation);
 }
 

@@ -59,6 +59,9 @@ protected:
     FVector CrouchSALocation;
     FVector DefaultSALocation;
     UPROPERTY(EditDefaultsOnly, Category = Player)
+    FVector CrouchFootsLocation;
+    FVector DefaultFootsLocation;
+    UPROPERTY(EditDefaultsOnly, Category = Player)
     FVector FoldWeaponLocation;
 
     uint8_t CurrentWeaponIndex;
