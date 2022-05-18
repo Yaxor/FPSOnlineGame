@@ -38,18 +38,20 @@ AWeapon::AWeapon()
     ClientsGunMesh = CreateDefaultSubobject<USkeletalMeshComponent>("ClientsGunMesh");
     ClientsGunMesh->bOwnerNoSee = true;
 
-    ArmsAimLocation     = FVector(30.0f, -6.0f, -30.0f);
-    WeaponSocket        = FName("WeaponSocket");
-    ClientsWeaponSocket = FName("WeaponSocket");
-    MuzzleSocketName    = FName("MuzzleSocket");
-    AimFOV              = 65.0f;
-    AimInterSpeedAim    = 22.0f;
-    BaseDamage          = 20.0f;
-    BulletSpread        = 2.0f;
-    HeadshotMultiplier  = 2.5f;
-    MaxAmmo             = 30;
-    FireRate            = 600.0f;
-    ShotDistance        = 10000.0f;
+    ArmsAimLocation        = FVector(30.0f, -6.0f, -30.0f);
+    AimShotSocket          = FName("AimShotStart");
+    ClientsWeaponSocket    = FName("WeaponSocket");
+    MuzzleSocketName       = FName("MuzzleSocket");
+    MuzzleSocketNameOthers = FName("MuzzleSocketOthers");
+    WeaponSocket           = FName("WeaponSocket");
+    AimFOV                 = 65.0f;
+    AimInterSpeedAim       = 22.0f;
+    BaseDamage             = 20.0f;
+    BulletSpread           = 2.0f;
+    HeadshotMultiplier     = 2.5f;
+    MaxAmmo                = 30;
+    FireRate               = 600.0f;
+    ShotDistance           = 10000.0f;
 
     SetReplicates(true);
     SetReplicatingMovement(true);
@@ -179,8 +181,9 @@ void AWeapon::Fire()
     if (MyOwner && MyFPSPlayer && GetIsServer()) // (GetLocalRole() == ROLE_Authority))
     {
         CurrentAmmo--;
+        ShotsCounterFireFX++;
 
-        const FVector& StartLocation = MyFPSPlayer->GetCamera()->GetComponentLocation();
+        const FVector& StartLocation = GunMesh->GetSocketLocation(AimShotSocket);
         const FRotator& AimRotation  = MyFPSPlayer->GetBaseAimRotation();
 
         FVector ShotDirection = AimRotation.Vector();
@@ -260,10 +263,10 @@ bool AWeapon::ServerFire_Validate()
 void AWeapon::WeaponRecoil_Delay()
 {
     FLatentActionInfo LatentInfo;
-    LatentInfo.CallbackTarget = this;
+    LatentInfo.CallbackTarget    = this;
     LatentInfo.ExecutionFunction = FName("ClientWeaponRecoil");
-    LatentInfo.Linkage = 0;
-    LatentInfo.UUID = 0;
+    LatentInfo.Linkage           = 0;
+    LatentInfo.UUID              = 0;
 
     UKismetSystemLibrary::Delay(GetWorld(), 0.06f, LatentInfo);
 }
@@ -346,11 +349,43 @@ void AWeapon::ClientPlayFireFX_Implementation()
             PlayerController->ClientStartCameraShake(FireCamShake);
         }
     }
+
+    AFPSMBCharacter* MyFPSPlayer = CastChecked<AFPSMBCharacter>(GetOwner());
+    if (!MyFPSPlayer->GetIsServer())
+    {
+        ServerPlayFireFX();
+    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 bool AWeapon::ClientPlayFireFX_Validate()
 {    return true;}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::OthersPlayersFireFX()
+{
+    if (MuzzleVFX && ClientsGunMesh)
+    {
+        UGameplayStatics::SpawnEmitterAttached(MuzzleVFX, ClientsGunMesh, MuzzleSocketNameOthers, FVector::ZeroVector, FRotator::ZeroRotator,
+                                               EAttachLocation::SnapToTarget, true, EPSCPoolMethod::AutoRelease, true);
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::ServerPlayFireFX_Implementation()
+{
+    OthersPlayersFireFX();
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AWeapon::ServerPlayFireFX_Validate()
+{    return true;}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::OnRep_OthersPlayFireFX()
+{
+    OthersPlayersFireFX();
+}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::ServerReload_Implementation()
@@ -368,4 +403,5 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
     DOREPLIFETIME(AWeapon, CurrentAmmo);
+    DOREPLIFETIME_CONDITION(AWeapon, ShotsCounterFireFX, COND_SkipOwner);
 }
