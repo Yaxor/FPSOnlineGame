@@ -32,6 +32,7 @@ AWeapon::AWeapon()
 {
     GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>("GunMesh");
     GunMesh->bOnlyOwnerSee = true;
+    GunMesh->CastShadow    = false;
 
     // Make other gunmesh for the other clients
     ClientsGunMesh = CreateDefaultSubobject<USkeletalMeshComponent>("ClientsGunMesh");
