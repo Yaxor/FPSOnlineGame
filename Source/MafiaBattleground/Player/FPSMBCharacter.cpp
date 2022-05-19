@@ -34,15 +34,6 @@ AFPSMBCharacter::AFPSMBCharacter()
     SpringArm->bEnableCameraLag         = false;
     SpringArm->bEnableCameraRotationLag = false;
 
-    // SpringArm to Owner Body Shadow
-    SpringArmShadowBody = CreateDefaultSubobject<USpringArmComponent>("SpringArmFoots");
-    SpringArmShadowBody->SetupAttachment(RootComponent);
-    SpringArmShadowBody->SetRelativeLocation(FVector(-30.0f, 0.0f, -80.0f));
-    SpringArmShadowBody->TargetArmLength          = 120.0f;
-    SpringArmShadowBody->bUsePawnControlRotation  = false;
-    SpringArmShadowBody->bEnableCameraLag         = false;
-    SpringArmShadowBody->bEnableCameraRotationLag = false;
-
     // Camera
     FPSCamera = CreateDefaultSubobject<UCameraComponent>("FPSCamera");
     FPSCamera->SetupAttachment(SpringArm);
@@ -58,8 +49,8 @@ AFPSMBCharacter::AFPSMBCharacter()
 
     // Body Shadow
     ShadowMesh = CreateDefaultSubobject<USkeletalMeshComponent>("ShadowMesh");
-    ShadowMesh->SetupAttachment(SpringArmShadowBody);
-    ShadowMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -10.0f));
+    ShadowMesh->SetupAttachment(RootComponent);
+    ShadowMesh->SetRelativeLocation(FVector(-150.0f, 0.0f, -90.0f));
     ShadowMesh->SetRelativeRotation(FRotator(0.0, -90.0f, 0.0f));
     ShadowMesh->bOnlyOwnerSee     = true;
     ShadowMesh->bRenderInMainPass = false;
