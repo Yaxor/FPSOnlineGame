@@ -34,6 +34,15 @@ AFPSMBCharacter::AFPSMBCharacter()
     SpringArm->bEnableCameraLag         = false;
     SpringArm->bEnableCameraRotationLag = false;
 
+    // SpringArm to Owner Body Shadow
+    SpringArmShadowBody = CreateDefaultSubobject<USpringArmComponent>("SpringArmFoots");
+    SpringArmShadowBody->SetupAttachment(RootComponent);
+    SpringArmShadowBody->SetRelativeLocation(FVector(-30.0f, 0.0f, -80.0f));
+    SpringArmShadowBody->TargetArmLength          = 120.0f;
+    SpringArmShadowBody->bUsePawnControlRotation  = false;
+    SpringArmShadowBody->bEnableCameraLag         = false;
+    SpringArmShadowBody->bEnableCameraRotationLag = false;
+
     // Camera
     FPSCamera = CreateDefaultSubobject<UCameraComponent>("FPSCamera");
     FPSCamera->SetupAttachment(SpringArm);
@@ -47,18 +56,10 @@ AFPSMBCharacter::AFPSMBCharacter()
     ArmsMesh->bOnlyOwnerSee = true;
     ArmsMesh->CastShadow    = false;
 
-    // Foots mesh
-    FootsMesh = CreateDefaultSubobject<USkeletalMeshComponent>("FootsMesh");
-    FootsMesh->SetupAttachment(RootComponent);
-    FootsMesh->SetRelativeLocation(FVector(-70.0f, 0.0f, -90.0f));
-    FootsMesh->SetRelativeRotation(FRotator(0.0, -90.0f, 0.0f));
-    FootsMesh->bOnlyOwnerSee     = true;
-    FootsMesh->CastShadow        = false;
-
     // Body Shadow
     ShadowMesh = CreateDefaultSubobject<USkeletalMeshComponent>("ShadowMesh");
-    ShadowMesh->SetupAttachment(RootComponent);
-    ShadowMesh->SetRelativeLocation(FVector(-70.0f, 0.0f, -90.0f));
+    ShadowMesh->SetupAttachment(SpringArmShadowBody);
+    ShadowMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -10.0f));
     ShadowMesh->SetRelativeRotation(FRotator(0.0, -90.0f, 0.0f));
     ShadowMesh->bOnlyOwnerSee     = true;
     ShadowMesh->bRenderInMainPass = false;
@@ -87,7 +88,6 @@ AFPSMBCharacter::AFPSMBCharacter()
 
     HipBoneName         = FName("spine_01");
     CrouchSALocation    = FVector(0.0f, 0.0f, 40.0f);
-    CrouchFootsLocation = FVector(-70.0f, 0.0f, -60.0f);
     FoldWeaponLocation  = FVector(0.0f, 0.0f, -600.0f);
     CurrentWeaponIndex  = 0;
     CrouchInterpSpeed   = 10.0f;
@@ -169,13 +169,10 @@ void AFPSMBCharacter::BeginPlay()
     Super::BeginPlay();
 
     ArmsDefaultLocation    = ArmsMesh->GetRelativeLocation();
-    DefaultFootsLocation   = FootsMesh->GetRelativeLocation();
     DefaultSALocation      = SpringArm->GetRelativeLocation();
     DefaultSpringArmLength = SpringArm->TargetArmLength;
     DefaultFOV             = FPSCamera->FieldOfView;
     DefaultMaxWalkSpeed    = GetCharacterMovement()->MaxWalkSpeed;
-
-    FootsMesh->HideBoneByName(HipBoneName, EPhysBodyOp::PBO_None);
 
     // Delays Functions
     CheckInitialPlayerRefInController_Delay();
@@ -240,12 +237,9 @@ void AFPSMBCharacter::WeaponReload()
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AFPSMBCharacter::UpdateCrouch(bool bIsCrouch, float DeltaTime)
 {
-    const FVector NextFootsLocation = bIsCrouch ? CrouchFootsLocation : DefaultFootsLocation;
-
     const FVector TargetLocation = bIsCrouch ? CrouchSALocation : DefaultSALocation;
     const FVector NextLocation   = FMath::VInterpTo(SpringArm->GetRelativeLocation(), TargetLocation, DeltaTime, CrouchInterpSpeed);
 
-    FootsMesh->SetRelativeLocation(NextFootsLocation);
     SpringArm->SetRelativeLocation(NextLocation);
 }
 

@@ -28,13 +28,13 @@ protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
     class USpringArmComponent* SpringArm;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+    class USpringArmComponent* SpringArmShadowBody;
     /** FPS camera */
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
     class UCameraComponent* FPSCamera;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
     class USkeletalMeshComponent* ArmsMesh;
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-    class USkeletalMeshComponent* FootsMesh;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
     class USkeletalMeshComponent* ShadowMesh;
 
@@ -58,9 +58,6 @@ protected:
     UPROPERTY(EditDefaultsOnly, Category = Player)
     FVector CrouchSALocation;
     FVector DefaultSALocation;
-    UPROPERTY(EditDefaultsOnly, Category = Player)
-    FVector CrouchFootsLocation;
-    FVector DefaultFootsLocation;
     UPROPERTY(EditDefaultsOnly, Category = Player)
     FVector FoldWeaponLocation;
 
