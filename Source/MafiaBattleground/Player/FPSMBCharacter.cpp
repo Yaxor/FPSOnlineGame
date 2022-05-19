@@ -42,7 +42,7 @@ AFPSMBCharacter::AFPSMBCharacter()
     // ArmMesh
     ArmsMesh = CreateDefaultSubobject<USkeletalMeshComponent>("ArmsMesh");
     ArmsMesh->SetupAttachment(SpringArm);
-    ArmsMesh->SetRelativeLocation(FVector(30.0f, 6.0f, -40.0f));
+    ArmsMesh->SetRelativeLocation(FVector(12.0f, 6.0f, -40.0f));
     ArmsMesh->SetRelativeRotation(FRotator(-10.0f, -89.0f, 92.0f));
     ArmsMesh->bOnlyOwnerSee = true;
     ArmsMesh->CastShadow    = false;
