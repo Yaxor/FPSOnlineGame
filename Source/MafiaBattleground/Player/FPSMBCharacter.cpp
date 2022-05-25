@@ -19,6 +19,7 @@
 
 #include "FPSMBPlayerController.h"
 #include "MafiaBattleground/Weapons/Weapon.h"
+#include "MafiaBattleground/Components/FPSMBHealthComponent.h"
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 AFPSMBCharacter::AFPSMBCharacter()
@@ -55,12 +56,16 @@ AFPSMBCharacter::AFPSMBCharacter()
     ShadowMesh->bOnlyOwnerSee     = true;
     ShadowMesh->bRenderInMainPass = false;
 
+    // HealthComponent
+    HealthComp = CreateDefaultSubobject<UFPSMBHealthComponent>("HealthComp");
+
     // Capsule
     GetCapsuleComponent()->InitCapsuleSize(36.0f, 92.0f);
 
     // Body Mesh Location and Rotation
     GetMesh()->SetRelativeLocation(FVector (0.0f, 0.0f, -90.0f));
     GetMesh()->SetRelativeRotation(FRotator(0.0f, 270.0f, 0.0f));
+    GetMesh()->SetIsReplicated(true);
     GetMesh()->bOwnerNoSee = true;
 
     // Configure character movement
@@ -77,14 +82,16 @@ AFPSMBCharacter::AFPSMBCharacter()
     bUseControllerRotationYaw   = true;
     bUseControllerRotationRoll  = false;
 
-    HipBoneName         = FName("spine_01");
+    //HipBoneName         = FName("spine_01");
+    HeadBoneName        = FName("Head");
     CrouchSALocation    = FVector(0.0f, 0.0f, 40.0f);
     FoldWeaponLocation  = FVector(0.0f, 0.0f, -600.0f);
+    bIsDead             = false;
+    AimMaxWalkSpeed     = 350.0f;
     CurrentWeaponIndex  = 0;
     CrouchInterpSpeed   = 10.0f;
+    DeathImpulse        = 20000.0f;
     RunMaxWalkSpeed     = 1000.0f;
-    AimMaxWalkSpeed     = 350.0f;
-    bIsDead             = false;
 
 
     bAlwaysRelevant    = true;
@@ -164,6 +171,8 @@ void AFPSMBCharacter::BeginPlay()
     DefaultSpringArmLength = SpringArm->TargetArmLength;
     DefaultFOV             = FPSCamera->FieldOfView;
     DefaultMaxWalkSpeed    = GetCharacterMovement()->MaxWalkSpeed;
+
+    HealthComp->OnHealthChanged.AddDynamic(this, &AFPSMBCharacter::OnHealthChanged);
 
     // Delays Functions
     CheckInitialPlayerRefInController_Delay();
@@ -398,6 +407,61 @@ void AFPSMBCharacter::ZoomInterp(const float DeltaTime)
         FPSCamera->SetFieldOfView(CurrentFOV);
     }
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBCharacter::OnHealthChanged(UFPSMBHealthComponent* HealthComponent, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+{
+    if ((Health <= 0.0f && !bIsDead))
+    {
+        // Die!
+        bIsDead = true;
+        OnRep_Died();
+
+        GetMovementComponent()->StopMovementImmediately();
+        GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+        if (DamageCauser)
+        {
+            const FVector& DeathDirection = UKismetMathLibrary::Normal(DamageCauser->GetActorForwardVector());
+            MultiOnDeathMesh(DeathDirection);
+        }
+        else
+        {
+            MultiOnDeathMesh(-GetActorForwardVector());
+        }
+
+        DetachFromControllerPendingDestroy();
+        SetLifeSpan(10.0f);
+
+        GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Died!"));
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBCharacter::OnRep_Died()
+{
+    CurrentWeapon->StopFire();
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBCharacter::MultiOnDeathMesh_Implementation(const FVector& DeathDirection)
+{
+    if (GetCapsuleComponent())
+    {
+        GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    }
+
+    if (GetMesh())
+    {
+        GetMesh()->SetSimulatePhysics(true);
+        GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+        GetMesh()->AddImpulse(DeathDirection * DeathImpulse, HeadBoneName, false);
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AFPSMBCharacter::MultiOnDeathMesh_Validate(const FVector& DeathDirection)
+{    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AFPSMBCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
