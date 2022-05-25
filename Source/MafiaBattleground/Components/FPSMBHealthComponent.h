@@ -10,6 +10,8 @@
 #include "Components/ActorComponent.h"
 #include "FPSMBHealthComponent.generated.h"
 
+// On Health Change Event
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnHealthChangedSignature, UFPSMBHealthComponent*, HealthComp, float, Health, float, HealthDelta, const class UDamageType*, DamageType, class AController*, InstigatedBy, AActor*, DamageCauser);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MAFIABATTLEGROUND_API UFPSMBHealthComponent : public UActorComponent
@@ -20,19 +22,59 @@ public:
     //!Constructor
     UFPSMBHealthComponent();
 
+    //*******************************************************************************************************************
+    //                                          PUBLIC VARIABLES                                                        *
+    //*******************************************************************************************************************
+
+    /* Delegate to make damage to my owner */
+    UPROPERTY(BlueprintAssignable, Category = Events)
+    FOnHealthChangedSignature OnHealthChanged;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = HealthComponent)
+    uint8 TeamNum;
+
 protected:
     //*******************************************************************************************************************
-    //                                          PROTECTED COMPONENTS AND VARIABLES                                      *
+    //                                          VARIABLES                                                               *
     //*******************************************************************************************************************
 
+    /* Can do damage to all players */
+    UPROPERTY(EditDefaultsOnly)
+    bool bFriendlyDamage;
+    bool bIsDead;
 
-private:
+    UPROPERTY(ReplicatedUsing = OnRep_Health, BlueprintReadOnly, Category = HealthComponent)
+    float Health;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = HealthComponent)
+    float MaxHealth;
+
+public:
     //*******************************************************************************************************************
-    //                                          PRIVATE FUNCTIONS                                                       *
+    //                                          PUBLIC FUNCTIONS                                                        *
+    //*******************************************************************************************************************
+
+    float GetHealth() const;
+
+    /* Healt my owner */
+    UFUNCTION(BlueprintCallable, Category = HealthComponent)
+    void Heal(float HealAmount);
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = HealthComponent)
+    static bool IsFriendly(AActor* ActorA, AActor* ActorB);
+
+protected:
+    //*******************************************************************************************************************
+    //                                          PROTECTED FUNCTIONS                                                     *
     //*******************************************************************************************************************
 
     virtual void BeginPlay() override;
 
-    virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+    UFUNCTION()
+    void HandleTakeAnyDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
+                             class AController* InstigatedBy, AActor* DamageCauser);
 
+    UFUNCTION()
+    void OnRep_Health(float OldHealth);
+
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

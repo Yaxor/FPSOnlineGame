@@ -1,4 +1,8 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+//+--------------------------------------------------------+
+//| Project    : MafiaBattleground                         |
+//| UE Version : 4.27                                      |
+//| Author     : Matias Till                               |
+//+--------------------------------------------------------+
 
 #include "MafiaBattleground.h"
 #include "Modules/ModuleManager.h"

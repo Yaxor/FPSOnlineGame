@@ -35,9 +35,13 @@ protected:
     class USkeletalMeshComponent* ArmsMesh;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
     class USkeletalMeshComponent* ShadowMesh;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+    class UFPSMBHealthComponent* HealthComp;
 
-    UPROPERTY(EditDefaultsOnly, Category = RenderPlayer)
-    FName HipBoneName;
+    UPROPERTY(EditDefaultsOnly, Category = Player)
+    FName HeadBoneName;
+    //UPROPERTY(EditDefaultsOnly, Category = RenderPlayer)
+    //FName HipBoneName;
 
     UPROPERTY(EditDefaultsOnly, Category = Player)
     TSubclassOf<class AWeapon> AK47;
@@ -71,10 +75,12 @@ protected:
     float RunMaxWalkSpeed;
     UPROPERTY(EditDefaultsOnly, Category = Player);
     float CrouchInterpSpeed;
+    UPROPERTY(EditDefaultsOnly, Category = Player);
+    float DeathImpulse;
 
     UPROPERTY(BlueprintReadWrite)
     bool bJumped;
-    UPROPERTY(Replicated)
+    UPROPERTY(ReplicatedUsing = OnRep_Died, BlueprintReadOnly, Category = Player)
     bool bIsDead;
     UPROPERTY(Replicated, BlueprintReadOnly)
     bool bIsRuning;
@@ -175,6 +181,16 @@ protected:
 
     /* Interpolate the Camera FOV */
     void ZoomInterp(const float DeltaTime);
+
+    UFUNCTION()
+    void OnHealthChanged(UFPSMBHealthComponent* HealthComponent, float Health, float HealthDelta,
+                         const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
+    UFUNCTION()
+    void OnRep_Died();
+
+    UFUNCTION(NetMulticast, Reliable, WithValidation)
+    void MultiOnDeathMesh(const FVector& DeathDirection);
 
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
