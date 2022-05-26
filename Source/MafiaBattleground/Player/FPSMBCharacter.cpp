@@ -176,12 +176,6 @@ void AFPSMBCharacter::BeginPlay()
 
     // Delays Functions
     CheckInitialPlayerRefInController_Delay();
-
-    if (IsLocallyControlled())
-    {
-        ServerSpawnDefaultWeapon();
-        SetAimingCrosshair(false); // Set visible the crosshair
-    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -204,7 +198,7 @@ void AFPSMBCharacter::CheckInitialPlayerRefInController_Delay()
     LatentInfo.Linkage           = 0;
     LatentInfo.UUID              = 0;
 
-    UKismetSystemLibrary::Delay(GetWorld(), 0.1f, LatentInfo);
+    UKismetSystemLibrary::Delay(GetWorld(), 0.02f, LatentInfo); //0.1f
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -217,6 +211,13 @@ void AFPSMBCharacter::SetPlayerRefToController()
         if (MBGPlayerController)
         {
             MBGPlayerController->MyPlayerRef = this;
+        }
+
+        // Create Weapons and turn on the crosshair
+        if (PlayerController->IsLocalController())
+        {
+            ServerSpawnDefaultWeapon();
+            SetAimingCrosshair(false);
         }
     }
 }
@@ -253,6 +254,7 @@ void AFPSMBCharacter::ServerSpawnDefaultWeapon_Implementation()
     CurrentWeapon = GetWorld()->SpawnActor<AWeapon>(AK47, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
     Weapons.Add(CurrentWeapon);
     Weapons.Add(GetWorld()->SpawnActor<AWeapon>(SARifle, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams));
+
     if (CurrentWeapon)
     {
         CurrentWeapon->ServerGiveToPayer(this);
@@ -282,7 +284,11 @@ void AFPSMBCharacter::ChangeWeapon(uint8_t WeaponIndex)
 
     // Stop aiming and stop fire
     ServerSetAiming(false);
-    CurrentWeapon->StopFire();
+
+    if (CurrentWeapon)
+    {
+        CurrentWeapon->StopFire();
+    }
 
     // Update Current Weapon
     CurrentWeaponIndex = WeaponIndex;
@@ -416,6 +422,7 @@ void AFPSMBCharacter::OnHealthChanged(UFPSMBHealthComponent* HealthComponent, fl
         // Die!
         bIsDead = true;
         OnRep_Died();
+        ClientOnDeath();
 
         GetMovementComponent()->StopMovementImmediately();
         GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -440,7 +447,10 @@ void AFPSMBCharacter::OnHealthChanged(UFPSMBHealthComponent* HealthComponent, fl
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AFPSMBCharacter::OnRep_Died()
 {
-    CurrentWeapon->StopFire();
+    if (CurrentWeapon)
+    {
+        CurrentWeapon->StopFire();
+    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -461,6 +471,14 @@ void AFPSMBCharacter::MultiOnDeathMesh_Implementation(const FVector& DeathDirect
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 bool AFPSMBCharacter::MultiOnDeathMesh_Validate(const FVector& DeathDirection)
+{    return true;}
+
+void AFPSMBCharacter::ClientOnDeath_Implementation()
+{
+    OnDeathHUD();
+}
+
+bool AFPSMBCharacter::ClientOnDeath_Validate()
 {    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
