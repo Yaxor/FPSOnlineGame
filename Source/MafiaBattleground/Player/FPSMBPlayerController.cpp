@@ -9,6 +9,7 @@
 
 #include "FPSMBCharacter.h"
 #include "MafiaBattleground/Weapons/Weapon.h"
+#include "MafiaBattleground/HUD/MBFPSMainHUD.h"
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 AFPSMBPlayerController::AFPSMBPlayerController()
@@ -18,14 +19,22 @@ AFPSMBPlayerController::AFPSMBPlayerController()
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
+AMBFPSMainHUD* AFPSMBPlayerController::GetMBFPSMainHUD()
+{
+    AMBFPSMainHUD* MainHUD = Cast<AMBFPSMainHUD>(GetHUD());
+    if (MainHUD)
+    {
+        return MainHUD;
+    }
+
+    return nullptr;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
 void AFPSMBPlayerController::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (IsLocalController())
-    {
-        CreateMainHUD();
-    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------

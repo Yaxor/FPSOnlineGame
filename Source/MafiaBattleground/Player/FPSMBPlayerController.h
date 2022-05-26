@@ -42,8 +42,8 @@ public:
     //                                          PUBLIC FUNCTIONS                                                        *
     //*******************************************************************************************************************
 
-    UFUNCTION(BlueprintImplementableEvent)
-    void CreateMainHUD();
+    UFUNCTION(BlueprintCallable)
+    AMBFPSMainHUD* GetMBFPSMainHUD();
 
 private:
     //*******************************************************************************************************************
