@@ -129,6 +129,9 @@ protected:
     //                                          PROTECTED FUNCTIONS                                                     *
     //*******************************************************************************************************************
 
+    UFUNCTION(BlueprintImplementableEvent)
+    void OnDeathHUD();
+
     /* Set bUseControllerRotationYaw to the Aiming Value and set bIsRuning to false */
     UFUNCTION(Client, Reliable, WithValidation)
     void ClientSetAiming(bool bIsAimingVal);
@@ -191,6 +194,10 @@ protected:
 
     UFUNCTION(NetMulticast, Reliable, WithValidation)
     void MultiOnDeathMesh(const FVector& DeathDirection);
+
+    /* Update HUD */
+    UFUNCTION(Client, Reliable, WithValidation)
+    void ClientOnDeath();
 
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
