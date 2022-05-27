@@ -66,27 +66,29 @@ protected:
     UPROPERTY(Replicated)
     uint8 CurrentWeaponIndex;
 
-    float DefaultSpringArmLength;
-    float DefaultFOV;
-    UPROPERTY(EditDefaultsOnly, Category = Player);
-    float DefaultMaxWalkSpeed;
     UPROPERTY(EditDefaultsOnly, Category = Player);
     float AimMaxWalkSpeed;
-    UPROPERTY(EditDefaultsOnly, Category = Player);
-    float RunMaxWalkSpeed;
     UPROPERTY(EditDefaultsOnly, Category = Player);
     float CrouchInterpSpeed;
     UPROPERTY(EditDefaultsOnly, Category = Player);
     float DeathImpulse;
+    UPROPERTY(EditDefaultsOnly, Category = Player);
+    float DeathTime;
+    float DefaultFOV;
+    UPROPERTY(EditDefaultsOnly, Category = Player);
+    float DefaultMaxWalkSpeed;
+    float DefaultSpringArmLength;
+    UPROPERTY(EditDefaultsOnly, Category = Player);
+    float RunMaxWalkSpeed;
 
     UPROPERTY(BlueprintReadWrite)
     bool bJumped;
+    UPROPERTY(Replicated, BlueprintReadOnly)
+    bool bIsAiming;
     UPROPERTY(ReplicatedUsing = OnRep_Died, BlueprintReadOnly, Category = Player)
     bool bIsDead;
     UPROPERTY(Replicated, BlueprintReadOnly)
     bool bIsRuning;
-    UPROPERTY(Replicated, BlueprintReadOnly)
-    bool bIsAiming;
 
 public:
     //*******************************************************************************************************************

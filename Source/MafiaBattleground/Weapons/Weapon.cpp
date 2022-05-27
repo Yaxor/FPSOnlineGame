@@ -48,6 +48,7 @@ AWeapon::AWeapon()
     AimInterSpeedAim       = 22.0f;
     BaseDamage             = 20.0f;
     BulletSpread           = 2.0f;
+    DeathTime              = 10.0f;
     HeadshotMultiplier     = 2.5f;
     MaxAmmo                = 30;
     FireRate               = 600.0f;
@@ -250,7 +251,7 @@ void AWeapon::Fire()
 
 void AWeapon::OnDeath()
 {
-    SetLifeSpan(10.0f);
+    SetLifeSpan(DeathTime);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------

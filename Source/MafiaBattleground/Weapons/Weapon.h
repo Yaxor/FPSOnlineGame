@@ -80,14 +80,14 @@ protected:
     float BulletSpread;
     float Cadence;
     UPROPERTY(EditDefaultsOnly, Category = Weapon)
+    float DeathTime;
+    UPROPERTY(EditDefaultsOnly, Category = Weapon)
     float FireRate;
     float LastFireTime;
     UPROPERTY(EditDefaultsOnly, Category = Weapon)
     float ShotDistance;
     UPROPERTY(EditDefaultsOnly, Category = Weapon)
     float HeadshotMultiplier;
-    UPROPERTY(EditDefaultsOnly, Category = Weapon)
-    float RecoilForce;
 
 public:
     //*******************************************************************************************************************
