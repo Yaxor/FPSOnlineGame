@@ -268,14 +268,15 @@ bool AFPSMBCharacter::ServerSpawnDefaultWeapon_Validate()
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AFPSMBCharacter::ChangeWeapon(uint8_t WeaponIndex)
 {
-    if (!GetIsServer())
+    // If it is greater than the number of items or less than 0 or WeaponIndex is equals current or is a invalid index return
+    if ((WeaponIndex >= Weapons.Num()) || (WeaponIndex < 0) || ( WeaponIndex == CurrentWeaponIndex) || (!Weapons.IsValidIndex(CurrentWeaponIndex)))
     {
-        ServerChangeWeapon(WeaponIndex);
         return;
     }
 
-    if (WeaponIndex == CurrentWeaponIndex)
+    if (!GetIsServer())
     {
+        ServerChangeWeapon(WeaponIndex);
         return;
     }
 
@@ -486,8 +487,10 @@ void AFPSMBCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+    DOREPLIFETIME(AFPSMBCharacter, CurrentWeaponIndex);
     DOREPLIFETIME(AFPSMBCharacter, CurrentWeapon);
     DOREPLIFETIME(AFPSMBCharacter, bIsAiming);
     DOREPLIFETIME(AFPSMBCharacter, bIsRuning);
     DOREPLIFETIME(AFPSMBCharacter, bIsDead);
+    DOREPLIFETIME(AFPSMBCharacter, Weapons);
 }
