@@ -91,6 +91,7 @@ AFPSMBCharacter::AFPSMBCharacter()
     CurrentWeaponIndex  = 0;
     CrouchInterpSpeed   = 10.0f;
     DeathImpulse        = 20000.0f;
+    DeathTime           = 10.0f;
     RunMaxWalkSpeed     = 1000.0f;
 
 
@@ -438,13 +439,14 @@ void AFPSMBCharacter::OnHealthChanged(UFPSMBHealthComponent* HealthComponent, fl
             MultiOnDeathMesh(-GetActorForwardVector());
         }
 
-        if (CurrentWeapon)
+        // Despawn all Weapons
+        for (AWeapon*& Weapon : Weapons)
         {
-            CurrentWeapon->OnDeath();
+            Weapon->OnDeath();
         }
 
         DetachFromControllerPendingDestroy();
-        SetLifeSpan(10.0f);
+        SetLifeSpan(DeathTime);
 
         GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Died!"));
     }
