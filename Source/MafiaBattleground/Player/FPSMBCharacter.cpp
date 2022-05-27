@@ -438,6 +438,11 @@ void AFPSMBCharacter::OnHealthChanged(UFPSMBHealthComponent* HealthComponent, fl
             MultiOnDeathMesh(-GetActorForwardVector());
         }
 
+        if (CurrentWeapon)
+        {
+            CurrentWeapon->OnDeath();
+        }
+
         DetachFromControllerPendingDestroy();
         SetLifeSpan(10.0f);
 
