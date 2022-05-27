@@ -110,7 +110,6 @@ void AShotgun::Fire()
                     float ActualDamage = BaseDamage;
                     if (SurfaceType == SURFACE_FLESHVULNERABLE)
                     {
-                        GEngine->AddOnScreenDebugMessage(i, 2.0f, FColor::Red, TEXT("Headshot"));
                         ActualDamage *= HeadshotMultiplier;
                     }
 

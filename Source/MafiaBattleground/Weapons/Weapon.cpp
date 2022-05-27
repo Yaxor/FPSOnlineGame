@@ -218,7 +218,6 @@ void AWeapon::Fire()
             float ActualDamage = BaseDamage;
             if (SurfaceType == SURFACE_FLESHVULNERABLE)
             {
-                GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Headshot"));
                 ActualDamage *= HeadshotMultiplier;
             }
 
@@ -247,6 +246,11 @@ void AWeapon::Fire()
 
         LastFireTime = GetWorld()->TimeSeconds;
     }
+}
+
+void AWeapon::OnDeath()
+{
+    SetLifeSpan(10.0f);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------

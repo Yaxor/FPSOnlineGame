@@ -126,6 +126,9 @@ public:
     /* Trace the world, from pawn eyes to crosshair location */
     virtual void Fire();
 
+    /* Set life span */
+    void OnDeath();
+
 protected:
     //*******************************************************************************************************************
     //                                          PROTECTED FUNCTIONS                                                     *
