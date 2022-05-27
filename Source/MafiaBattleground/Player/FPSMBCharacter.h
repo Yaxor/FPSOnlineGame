@@ -63,7 +63,8 @@ protected:
     UPROPERTY(EditDefaultsOnly, Category = Player)
     FVector FoldWeaponLocation;
 
-    uint8_t CurrentWeaponIndex;
+    UPROPERTY(Replicated)
+    uint8 CurrentWeaponIndex;
 
     float DefaultSpringArmLength;
     float DefaultFOV;
