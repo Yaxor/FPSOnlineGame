@@ -46,6 +46,9 @@ protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Weapon)
     UParticleSystem* MuzzleVFX;
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Weapon)
+    UTexture2D* WeaponIcon;
+
     UPROPERTY()
     FName AimShotSocket;
     UPROPERTY(EditDefaultsOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
