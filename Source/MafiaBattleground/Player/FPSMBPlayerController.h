@@ -106,4 +106,8 @@ private:
      */
     void LookUpAtRate(float Rate);
 
+    void RespawnPlayer();
+    UFUNCTION(Server, Reliable, WithValidation)
+    void ServerRespawnPlayer();
+
 };

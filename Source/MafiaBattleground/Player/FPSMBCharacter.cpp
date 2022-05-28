@@ -473,7 +473,7 @@ void AFPSMBCharacter::MultiOnDeathMesh_Implementation(const FVector& DeathDirect
     {
         GetMesh()->SetSimulatePhysics(true);
         GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-        GetMesh()->AddImpulse(DeathDirection * DeathImpulse, HeadBoneName, false);
+        GetMesh()->AddImpulse(DeathDirection * DeathImpulse, HeadBoneName, true);// false
     }
 }
 
