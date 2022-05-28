@@ -11,6 +11,8 @@
 #include "MafiaBattleground/Weapons/Weapon.h"
 #include "MafiaBattleground/HUD/MBFPSMainHUD.h"
 
+#include "MafiaBattleground/GameFramework/MafiaBattlegroundGameMode.h"
+
 //------------------------------------------------------------------------------------------------------------------------------------------
 AFPSMBPlayerController::AFPSMBPlayerController()
 {
@@ -55,7 +57,7 @@ void AFPSMBPlayerController::SetupInputComponent()
     InputComponent->BindAction("Reload", IE_Pressed , this, &AFPSMBPlayerController::ReloadWeapon);
     InputComponent->BindAction("ItemOne", IE_Pressed, this, &AFPSMBPlayerController::ChangeWeapon<0>);
     InputComponent->BindAction("ItemTwo", IE_Pressed, this, &AFPSMBPlayerController::ChangeWeapon<1>);
-
+    InputComponent->BindAction("Respawn", IE_Pressed, this, &AFPSMBPlayerController::RespawnPlayer);
 
     InputComponent->BindAxis("MoveForward", this, &AFPSMBPlayerController::MoveForward);
     InputComponent->BindAxis("MoveRight"  , this, &AFPSMBPlayerController::MoveRight);
@@ -262,3 +264,26 @@ void AFPSMBPlayerController::LookUpAtRate(float Rate)
     // calculate delta for this frame from the rate information
     AddPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBPlayerController::RespawnPlayer()
+{
+    if (!MyPlayerRef || MyPlayerRef->GetIsDead())
+    {
+        ServerRespawnPlayer();
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBPlayerController::ServerRespawnPlayer_Implementation()
+{
+    AMafiaBattlegroundGameMode* MBGameMode = Cast<AMafiaBattlegroundGameMode>(GetWorld()->GetAuthGameMode());
+    if (MBGameMode)
+    {
+        MBGameMode->RespawnPlayer(this);
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AFPSMBPlayerController::ServerRespawnPlayer_Validate()
+{    return true;}
