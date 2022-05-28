@@ -7,6 +7,8 @@
 
 #include "MBFPSMainHUD.h"
 
+#include "Kismet/KismetSystemLibrary.h"
+
 #include "MafiaBattleground/Player/FPSMBPlayerController.h"
 
 //------------------------------------------------------------------------------------------------------------------------------------------
