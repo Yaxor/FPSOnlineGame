@@ -74,11 +74,16 @@ void AWeapon::ServerGiveToPayer_Implementation(class ACharacter* Player)
             ClientsGunMesh->SetRelativeLocation(FVector::ZeroVector);
             ClientsGunMesh->SetRelativeRotation(FRotator::ZeroRotator);
             ClientsGunMesh->AttachToComponent(MyFPSPlayer->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, ClientsWeaponSocket);
+
+            ClientUpdateAmmo();
+
             return;
         }
 
         GunMesh->AttachToComponent(Player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
         ClientsGunMesh->AttachToComponent(MyFPSPlayer->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, ClientsWeaponSocket);
+
+        ClientUpdateAmmo();
     }
 }
 
@@ -128,6 +133,7 @@ void AWeapon::Reload()
 
     StopFire();
     CurrentAmmo = MaxAmmo;
+    ClientUpdateAmmo();
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -244,6 +250,8 @@ void AWeapon::Fire()
         {
             PlayImpactFX(SurfaceType, TraceEndPoint);
         }
+
+        ClientUpdateAmmo();
 
         LastFireTime = GetWorld()->TimeSeconds;
     }
@@ -391,6 +399,16 @@ void AWeapon::OnRep_OthersPlayFireFX()
 {
     OthersPlayersFireFX();
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::ClientUpdateAmmo_Implementation()
+{
+    UpdateAmmoHUD();
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AWeapon::ClientUpdateAmmo_Validate()
+{    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::ServerReload_Implementation()

@@ -131,6 +131,8 @@ void AShotgun::Fire()
                 {
                     PlayImpactFX(SurfaceType, TraceEndPoint);
                 }
+
+                ClientUpdateAmmo();
             }
         }
 

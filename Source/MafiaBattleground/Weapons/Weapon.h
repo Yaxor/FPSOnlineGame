@@ -104,6 +104,11 @@ public:
     FORCEINLINE float                   GetWeaponInterpSpeedAim() { return AimInterSpeedAim; };
     FORCEINLINE float                   GetCanReload()            { return CurrentAmmo != MaxAmmo; };
 
+    UFUNCTION(BlueprintCallable)
+    FORCEINLINE uint8 GetCurrentAmmo()                            { return CurrentAmmo; };
+    UFUNCTION(BlueprintCallable)
+    FORCEINLINE uint8 GetMaxAmmo()                                { return MaxAmmo; };
+
     //*******************************************************************************************************************
     //                                          PUBLIC FUNCTIONS                                                        *
     //*******************************************************************************************************************
@@ -180,6 +185,11 @@ protected:
     /* Call OthersPlayersFireFX in the others clients, SkipOwner */
     UFUNCTION()
     void OnRep_OthersPlayFireFX();
+
+    UFUNCTION(Client, Reliable, WithValidation)
+    void ClientUpdateAmmo();
+    UFUNCTION(BlueprintImplementableEvent)
+    void UpdateAmmoHUD();
 
     /* Call Reload(); */
     UFUNCTION(Server, Reliable, WithValidation)
