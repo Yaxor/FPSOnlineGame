@@ -26,6 +26,11 @@ public:
     UFUNCTION(BlueprintImplementableEvent)
     void CreateMainHUD();
 
+    UFUNCTION(BlueprintImplementableEvent)
+    void CreateInGameMenu();
+    UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+    void ToggleInGameMenu();
+
 private:
     //*******************************************************************************************************************
     //                                          PRIVATE FUNCTIONS                                                       *

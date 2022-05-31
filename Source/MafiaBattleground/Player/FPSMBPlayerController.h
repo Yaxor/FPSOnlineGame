@@ -45,6 +45,9 @@ public:
     UFUNCTION(BlueprintCallable)
     AMBFPSMainHUD* GetMBFPSMainHUD();
 
+    UFUNCTION(BlueprintImplementableEvent)
+    void ToggleInGameMenu();
+
 private:
     //*******************************************************************************************************************
     //                                          PRIVATE FUNCTIONS                                                       *

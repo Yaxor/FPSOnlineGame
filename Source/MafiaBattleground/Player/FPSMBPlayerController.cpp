@@ -44,20 +44,21 @@ void AFPSMBPlayerController::SetupInputComponent()
 {
     Super::SetupInputComponent();
 
-    InputComponent->BindAction("Jump"  , IE_Pressed , this, &AFPSMBPlayerController::Jump);
-    InputComponent->BindAction("Jump"  , IE_Released, this, &AFPSMBPlayerController::StopJumping);
-    InputComponent->BindAction("Crouch", IE_Pressed , this, &AFPSMBPlayerController::BeginCrouch);
-    InputComponent->BindAction("Crouch", IE_Released, this, &AFPSMBPlayerController::EndCrouch);
-    InputComponent->BindAction("Run"   , IE_Pressed , this, &AFPSMBPlayerController::BeginRun);
-    InputComponent->BindAction("Run"   , IE_Released, this, &AFPSMBPlayerController::EndRun);
-    InputComponent->BindAction("Aim"   , IE_Pressed , this, &AFPSMBPlayerController::SetAim<true>);
-    InputComponent->BindAction("Aim"   , IE_Released, this, &AFPSMBPlayerController::SetAim<false>);
-    InputComponent->BindAction("Fire"  , IE_Pressed , this, &AFPSMBPlayerController::StartFireWeapon);
-    InputComponent->BindAction("Fire"  , IE_Released, this, &AFPSMBPlayerController::StopFireWeapon);
-    InputComponent->BindAction("Reload", IE_Pressed , this, &AFPSMBPlayerController::ReloadWeapon);
-    InputComponent->BindAction("ItemOne", IE_Pressed, this, &AFPSMBPlayerController::ChangeWeapon<0>);
-    InputComponent->BindAction("ItemTwo", IE_Pressed, this, &AFPSMBPlayerController::ChangeWeapon<1>);
-    InputComponent->BindAction("Respawn", IE_Pressed, this, &AFPSMBPlayerController::RespawnPlayer);
+    InputComponent->BindAction("Jump"      , IE_Pressed , this, &AFPSMBPlayerController::Jump);
+    InputComponent->BindAction("Jump"      , IE_Released, this, &AFPSMBPlayerController::StopJumping);
+    InputComponent->BindAction("Crouch"    , IE_Pressed , this, &AFPSMBPlayerController::BeginCrouch);
+    InputComponent->BindAction("Crouch"    , IE_Released, this, &AFPSMBPlayerController::EndCrouch);
+    InputComponent->BindAction("Run"       , IE_Pressed , this, &AFPSMBPlayerController::BeginRun);
+    InputComponent->BindAction("Run"       , IE_Released, this, &AFPSMBPlayerController::EndRun);
+    InputComponent->BindAction("Aim"       , IE_Pressed , this, &AFPSMBPlayerController::SetAim<true>);
+    InputComponent->BindAction("Aim"       , IE_Released, this, &AFPSMBPlayerController::SetAim<false>);
+    InputComponent->BindAction("Fire"      , IE_Pressed , this, &AFPSMBPlayerController::StartFireWeapon);
+    InputComponent->BindAction("Fire"      , IE_Released, this, &AFPSMBPlayerController::StopFireWeapon);
+    InputComponent->BindAction("Reload"    , IE_Pressed , this, &AFPSMBPlayerController::ReloadWeapon);
+    InputComponent->BindAction("ItemOne"   , IE_Pressed , this, &AFPSMBPlayerController::ChangeWeapon<0>);
+    InputComponent->BindAction("ItemTwo"   , IE_Pressed , this, &AFPSMBPlayerController::ChangeWeapon<1>);
+    InputComponent->BindAction("Respawn"   , IE_Pressed , this, &AFPSMBPlayerController::RespawnPlayer);
+    InputComponent->BindAction("InGameMenu", IE_Pressed , this, &AFPSMBPlayerController::ToggleInGameMenu);
 
     InputComponent->BindAxis("MoveForward", this, &AFPSMBPlayerController::MoveForward);
     InputComponent->BindAxis("MoveRight"  , this, &AFPSMBPlayerController::MoveRight);
