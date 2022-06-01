@@ -9,6 +9,9 @@
 
 #include "FPSMBCharacter.h"
 #include "MafiaBattleground/Weapons/Weapon.h"
+#include "MafiaBattleground/HUD/MBFPSMainHUD.h"
+
+#include "MafiaBattleground/GameFramework/MafiaBattlegroundGameMode.h"
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 AFPSMBPlayerController::AFPSMBPlayerController()
@@ -18,14 +21,22 @@ AFPSMBPlayerController::AFPSMBPlayerController()
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
+AMBFPSMainHUD* AFPSMBPlayerController::GetMBFPSMainHUD()
+{
+    AMBFPSMainHUD* MainHUD = Cast<AMBFPSMainHUD>(GetHUD());
+    if (MainHUD)
+    {
+        return MainHUD;
+    }
+
+    return nullptr;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
 void AFPSMBPlayerController::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (IsLocalController())
-    {
-        CreateMainHUD();
-    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -33,25 +44,41 @@ void AFPSMBPlayerController::SetupInputComponent()
 {
     Super::SetupInputComponent();
 
-    InputComponent->BindAction("Jump"  , IE_Pressed , this, &AFPSMBPlayerController::Jump);
-    InputComponent->BindAction("Jump"  , IE_Released, this, &AFPSMBPlayerController::StopJumping);
-    InputComponent->BindAction("Crouch", IE_Pressed , this, &AFPSMBPlayerController::BeginCrouch);
-    InputComponent->BindAction("Crouch", IE_Released, this, &AFPSMBPlayerController::EndCrouch);
-    InputComponent->BindAction("Run"   , IE_Pressed , this, &AFPSMBPlayerController::BeginRun);
-    InputComponent->BindAction("Run"   , IE_Released, this, &AFPSMBPlayerController::EndRun);
-    InputComponent->BindAction("Aim"   , IE_Pressed , this, &AFPSMBPlayerController::SetAim<true>);
-    InputComponent->BindAction("Aim"   , IE_Released, this, &AFPSMBPlayerController::SetAim<false>);
-    InputComponent->BindAction("Fire"  , IE_Pressed , this, &AFPSMBPlayerController::StartFireWeapon);
-    InputComponent->BindAction("Fire"  , IE_Released, this, &AFPSMBPlayerController::StopFireWeapon);
-    InputComponent->BindAction("Reload", IE_Pressed , this, &AFPSMBPlayerController::ReloadWeapon);
+    InputComponent->BindAction("Jump"      , IE_Pressed , this, &AFPSMBPlayerController::Jump);
+    InputComponent->BindAction("Jump"      , IE_Released, this, &AFPSMBPlayerController::StopJumping);
+    InputComponent->BindAction("Crouch"    , IE_Pressed , this, &AFPSMBPlayerController::BeginCrouch);
+    InputComponent->BindAction("Crouch"    , IE_Released, this, &AFPSMBPlayerController::EndCrouch);
+    InputComponent->BindAction("Run"       , IE_Pressed , this, &AFPSMBPlayerController::BeginRun);
+    InputComponent->BindAction("Run"       , IE_Released, this, &AFPSMBPlayerController::EndRun);
+    InputComponent->BindAction("Aim"       , IE_Pressed , this, &AFPSMBPlayerController::SetAim<true>);
+    InputComponent->BindAction("Aim"       , IE_Released, this, &AFPSMBPlayerController::SetAim<false>);
+    InputComponent->BindAction("Fire"      , IE_Pressed , this, &AFPSMBPlayerController::StartFireWeapon);
+    InputComponent->BindAction("Fire"      , IE_Released, this, &AFPSMBPlayerController::StopFireWeapon);
+    InputComponent->BindAction("Reload"    , IE_Pressed , this, &AFPSMBPlayerController::ReloadWeapon);
+    InputComponent->BindAction("ItemOne"   , IE_Pressed , this, &AFPSMBPlayerController::ChangeWeapon<0>);
+    InputComponent->BindAction("ItemTwo"   , IE_Pressed , this, &AFPSMBPlayerController::ChangeWeapon<1>);
+    InputComponent->BindAction("Respawn"   , IE_Pressed , this, &AFPSMBPlayerController::RespawnPlayer);
+    InputComponent->BindAction("InGameMenu", IE_Pressed , this, &AFPSMBPlayerController::ToggleInGameMenu);
 
     InputComponent->BindAxis("MoveForward", this, &AFPSMBPlayerController::MoveForward);
     InputComponent->BindAxis("MoveRight"  , this, &AFPSMBPlayerController::MoveRight);
 
-    InputComponent->BindAxis("Turn"      , this, &AFPSMBPlayerController::AddControllerYawInput);
-    InputComponent->BindAxis("LookUp"    , this, &AFPSMBPlayerController::AddControllerPitchInput);
-    InputComponent->BindAxis("TurnRate"  , this, &AFPSMBPlayerController::TurnAtRate);
-    InputComponent->BindAxis("LookUpRate", this, &AFPSMBPlayerController::LookUpAtRate);
+    InputComponent->BindAxis("Turn"      , this, &AFPSMBPlayerController::AddControllerYawInput); // Mouse X
+    InputComponent->BindAxis("LookUp"    , this, &AFPSMBPlayerController::AddControllerPitchInput); // Mouse Y
+    InputComponent->BindAxis("TurnRate"  , this, &AFPSMBPlayerController::TurnAtRate); // Gamepad
+    InputComponent->BindAxis("LookUpRate", this, &AFPSMBPlayerController::LookUpAtRate); // Gamepad
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBPlayerController::ChangeWeapon(const uint8_t Index)
+{
+    if (MyPlayerRef)
+    {
+        if (!MyPlayerRef->GetIsDead())
+        {
+            MyPlayerRef->ChangeWeapon(Index);
+        }
+    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -143,7 +170,7 @@ void AFPSMBPlayerController::StartFireWeapon()
 {
     if (MyPlayerRef)
     {
-        if (!MyPlayerRef->GetIsDead() && MyPlayerRef->GetCurrentWeapon())
+        if ((!MyPlayerRef->GetIsDead()) && (MyPlayerRef->GetCurrentWeapon()) && (!MyPlayerRef->bIsRuning))
         {
             MyPlayerRef->GetCurrentWeapon()->StartFire();
         }
@@ -169,7 +196,7 @@ void AFPSMBPlayerController::ReloadWeapon()
     {
         if (!MyPlayerRef->GetIsDead() && MyPlayerRef->GetCurrentWeapon())
         {
-            MyPlayerRef->GetCurrentWeapon()->Reload();
+            MyPlayerRef->WeaponReload();
         }
     }
 }
@@ -214,12 +241,14 @@ void AFPSMBPlayerController::MoveRight(float Value)
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AFPSMBPlayerController::AddControllerYawInput(float Value)
 {
+    //AddYawInput(Value * Sensitivity); // Sensitivity es un float que modifico en el menu de pausa
     AddYawInput(Value);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AFPSMBPlayerController::AddControllerPitchInput(float Value)
 {
+    //AddPitchInput(Value * Sensitivity);
     AddPitchInput(Value);
 }
 
@@ -236,3 +265,26 @@ void AFPSMBPlayerController::LookUpAtRate(float Rate)
     // calculate delta for this frame from the rate information
     AddPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBPlayerController::RespawnPlayer()
+{
+    if (!MyPlayerRef || MyPlayerRef->GetIsDead())
+    {
+        ServerRespawnPlayer();
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBPlayerController::ServerRespawnPlayer_Implementation()
+{
+    AMafiaBattlegroundGameMode* MBGameMode = Cast<AMafiaBattlegroundGameMode>(GetWorld()->GetAuthGameMode());
+    if (MBGameMode)
+    {
+        MBGameMode->RespawnPlayer(this);
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AFPSMBPlayerController::ServerRespawnPlayer_Validate()
+{    return true;}

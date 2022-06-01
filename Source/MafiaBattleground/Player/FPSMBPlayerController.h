@@ -42,8 +42,11 @@ public:
     //                                          PUBLIC FUNCTIONS                                                        *
     //*******************************************************************************************************************
 
+    UFUNCTION(BlueprintCallable)
+    AMBFPSMainHUD* GetMBFPSMainHUD();
+
     UFUNCTION(BlueprintImplementableEvent)
-    void CreateMainHUD();
+    void ToggleInGameMenu();
 
 private:
     //*******************************************************************************************************************
@@ -53,6 +56,14 @@ private:
     virtual void BeginPlay();
 
     virtual void SetupInputComponent() override;
+
+    void ChangeWeapon(const uint8_t Index);
+
+    template<uint8_t Index>
+    void ChangeWeapon()
+    {
+        ChangeWeapon(Index);
+    }
 
     void SetAim(bool bIsAiming);
 
@@ -97,5 +108,9 @@ private:
      * @param Rate This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
      */
     void LookUpAtRate(float Rate);
+
+    void RespawnPlayer();
+    UFUNCTION(Server, Reliable, WithValidation)
+    void ServerRespawnPlayer();
 
 };

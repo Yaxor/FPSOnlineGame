@@ -9,6 +9,7 @@
 #include "Net/UnrealNetwork.h"
 
 #include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
@@ -31,21 +32,31 @@ AWeapon::AWeapon()
 {
     GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>("GunMesh");
     GunMesh->bOnlyOwnerSee = true;
+    GunMesh->CastShadow    = false;
 
     // Make other gunmesh for the other clients
+    ClientsGunMesh = CreateDefaultSubobject<USkeletalMeshComponent>("ClientsGunMesh");
+    ClientsGunMesh->bOwnerNoSee = true;
 
-    WeaponSocket       = FName("WeaponSocket");
-    MuzzleSocketName   = FName("MuzzleSocket");
-    AimFOV             = 65.0f;
-    AimInterSpeedAim   = 22.0f;
-    BaseDamage         = 20.0f;
-    BulletSpread       = 2.0f;
-    HeadshotMultiplier = 2.5f;
-    MaxAmmo            = 30;
-    FireRate           = 600.0f;
-    ShotDistance       = 10000.0f;
+    ArmsAimLocation        = FVector(30.0f, -6.0f, -30.0f);
+    AimShotSocket          = FName("AimShotStart");
+    ClientsWeaponSocket    = FName("WeaponSocket");
+    MuzzleSocketName       = FName("MuzzleSocket");
+    MuzzleSocketNameOthers = FName("MuzzleSocketOthers");
+    WeaponSocket           = FName("WeaponSocket");
+    AimFOV                 = 65.0f;
+    AimInterSpeedAim       = 22.0f;
+    BaseDamage             = 20.0f;
+    BulletSpread           = 2.0f;
+    DeathTime              = 10.0f;
+    HeadshotMultiplier     = 2.5f;
+    MaxAmmo                = 30;
+    FireRate               = 600.0f;
+    ShotDistance           = 10000.0f;
 
     SetReplicates(true);
+    SetReplicatingMovement(true);
+    bAlwaysRelevant = true;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -60,10 +71,19 @@ void AWeapon::ServerGiveToPayer_Implementation(class ACharacter* Player)
         if (MyFPSPlayer)
         {
             GunMesh->AttachToComponent(MyFPSPlayer->GetArmsMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
+            ClientsGunMesh->SetRelativeLocation(FVector::ZeroVector);
+            ClientsGunMesh->SetRelativeRotation(FRotator::ZeroRotator);
+            ClientsGunMesh->AttachToComponent(MyFPSPlayer->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, ClientsWeaponSocket);
+
+            ClientUpdateAmmo();
+
             return;
         }
 
         GunMesh->AttachToComponent(Player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
+        ClientsGunMesh->AttachToComponent(MyFPSPlayer->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, ClientsWeaponSocket);
+
+        ClientUpdateAmmo();
     }
 }
 
@@ -72,13 +92,37 @@ bool AWeapon::ServerGiveToPayer_Validate(class ACharacter* Player)
 {    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::MultiAim_Implementation(bool bAimingVal)
+{
+    AActor* MyOwner = GetOwner();
+    AFPSMBCharacter* MyFPSPlayer = CastChecked<AFPSMBCharacter>(GetOwner());
+
+    if (MyFPSPlayer)
+    {
+        if (bAimingVal)
+        {
+            MyFPSPlayer->GetCamera()->AttachToComponent(GunMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("CameraAim"));
+            MyFPSPlayer->GetArmsMesh()->SetRelativeLocation(ArmsAimLocation);
+            MyFPSPlayer->GetCamera()->bUsePawnControlRotation = true;
+        }
+        else
+        {
+            MyFPSPlayer->GetCamera()->AttachToComponent(MyFPSPlayer->GetSpringArm(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+            MyFPSPlayer->GetArmsMesh()->SetRelativeLocation(MyFPSPlayer->GetArmsAimDefaultLocation());
+            MyFPSPlayer->GetCamera()->bUsePawnControlRotation = false;
+            StopWeaponRecoil();
+        }
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AWeapon::MultiAim_Validate(bool bAimingVal)
+{    return true;}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::Reload()
 {
     // Call in animation reload
-    if (CurrentAmmo == MaxAmmo)
-    {
-        return;
-    }
 
     // If you are a Client, send a request to Server
     if (!GetIsServer()) // GetLocalRole() < ROLE_Authority)
@@ -87,21 +131,20 @@ void AWeapon::Reload()
         return;
     }
 
+    StopFire();
     CurrentAmmo = MaxAmmo;
+    ClientUpdateAmmo();
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::StartFire()
 {
-    float FirstDelay = FMath::Max(LastFireTime + Cadence - GetWorld()->TimeSeconds, 0.0f);
-
-    GetWorldTimerManager().SetTimer(TimerHandle_Cadence, this, &AWeapon::Fire, Cadence, true, FirstDelay);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::StopFire()
 {
-    GetWorldTimerManager().ClearTimer(TimerHandle_Cadence);
+    ClientStopFire();
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -114,31 +157,46 @@ void AWeapon::BeginPlay()
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::ClientStopFire_Implementation()
+{
+    GetWorldTimerManager().ClearTimer(TimerHandle_Fire);
+    StopWeaponRecoil(); // Cambiar esto a solo si estaba disparando (un bool de si disparo por ejemplo)
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AWeapon::ClientStopFire_Validate()
+{    return true;}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::Fire()
 {
     if (CurrentAmmo <= 0)
     {
+        StopWeaponRecoil();
         return;
     }
 
     if (!GetIsServer()) //GetLocalRole() < ROLE_Authority)
     {
         ServerFire();
+        return;
     }
 
     AActor* MyOwner = GetOwner();
+    AFPSMBCharacter* MyFPSPlayer = CastChecked<AFPSMBCharacter>(GetOwner());
 
-    if (MyOwner && GetIsServer()) // (GetLocalRole() == ROLE_Authority))
+    if (MyOwner && MyFPSPlayer && GetIsServer()) // (GetLocalRole() == ROLE_Authority))
     {
         CurrentAmmo--;
+        ShotsCounterFireFX++;
 
-        const FVector& StartLocation = MyPlayer->GetCamera()->GetComponentLocation();
-        const FRotator& AimRotation  = MyPlayer->GetBaseAimRotation();
+        const FVector& StartLocation = GunMesh->GetSocketLocation(AimShotSocket);
+        const FRotator& AimRotation  = MyFPSPlayer->GetBaseAimRotation();
 
         FVector ShotDirection = AimRotation.Vector();
 
         // Bullet Spread if my player is not aiming
-        if (!MyPlayer->GetIsAiming())
+        if (!MyFPSPlayer->GetIsAiming())
         {
             float HalfRad = FMath::DegreesToRadians(BulletSpread);
             ShotDirection = FMath::VRandCone(ShotDirection, HalfRad, HalfRad);
@@ -167,7 +225,6 @@ void AWeapon::Fire()
             float ActualDamage = BaseDamage;
             if (SurfaceType == SURFACE_FLESHVULNERABLE)
             {
-                GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Headshot"));
                 ActualDamage *= HeadshotMultiplier;
             }
 
@@ -183,24 +240,70 @@ void AWeapon::Fire()
         }
 
         PlayFireFX();
-        PlayImpactFX(SurfaceType, TraceEndPoint);
+
+        if (MyFPSPlayer->GetIsAiming())
+        {
+            ClientWeaponRecoil();
+        }
+
+        if (Hit.GetActor())
+        {
+            PlayImpactFX(SurfaceType, TraceEndPoint);
+        }
+
+        ClientUpdateAmmo();
 
         LastFireTime = GetWorld()->TimeSeconds;
-
-        // Por cada tiro rotar un poco el arma hacia arriba o sumarle un poco de altura al EndLocation a la direccion
     }
+}
+
+void AWeapon::OnDeath()
+{
+    SetLifeSpan(DeathTime);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::ServerFire_Implementation()
+{
+    Fire();
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AWeapon::ServerFire_Validate()
+{    return true;}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::WeaponRecoil_Delay()
+{
+    FLatentActionInfo LatentInfo;
+    LatentInfo.CallbackTarget    = this;
+    LatentInfo.ExecutionFunction = FName("ClientWeaponRecoil");
+    LatentInfo.Linkage           = 0;
+    LatentInfo.UUID              = 0;
+
+    UKismetSystemLibrary::Delay(GetWorld(), 0.06f, LatentInfo);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::ClientWeaponRecoil_Implementation()
+{
+    CustomWeaponRecoil();
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AWeapon::ClientWeaponRecoil_Validate()
+{    return true;}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::CustomWeaponRecoil()
+{
+    WeaponRecoil(); // Blueprint Event
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::PlayImpactFX(EPhysicalSurface SurfaceType, FVector ImpactPoint)
 {
     MultiPlayImpactFX(SurfaceType, ImpactPoint);
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------
-void AWeapon::PlayFireFX()
-{
-    MultiPlayFireFX();
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -222,7 +325,7 @@ void AWeapon::MultiPlayImpactFX_Implementation(EPhysicalSurface SurfaceType, FVe
         FVector ShotDiretion = ImpactPoint - MuzzleLocation;
         ShotDiretion.Normalize();
 
-        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SelectedVFX, ImpactPoint, ShotDiretion.Rotation());
+        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SelectedVFX, ImpactPoint, ShotDiretion.Rotation(), true, EPSCPoolMethod::AutoRelease, true);
     }
 }
 
@@ -231,12 +334,22 @@ bool AWeapon::MultiPlayImpactFX_Validate(EPhysicalSurface SurfaceType, FVector I
 {    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-void AWeapon::MultiPlayFireFX_Implementation()
+void AWeapon::PlayFireFX()
+{
+    ClientPlayFireFX();
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::ClientPlayFireFX_Implementation()
 {
     // Shot FX
     if (MuzzleVFX)
     {
-        UGameplayStatics::SpawnEmitterAttached(MuzzleVFX, GunMesh, MuzzleSocketName);
+        UGameplayStatics::SpawnEmitterAttached(MuzzleVFX, GunMesh, MuzzleSocketName, FVector::ZeroVector, FRotator::ZeroRotator,
+                                               EAttachLocation::SnapToTarget, true, EPSCPoolMethod::AutoRelease, true);
+        //const FVector MuzzleLocation  = GunMesh->GetSocketLocation(MuzzleSocketName);
+        //const FRotator MuzzleRotation = GunMesh->GetSocketRotation(MuzzleSocketName);
+        //UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleVFX, MuzzleLocation, MuzzleRotation);
     }
 
     // Camera Shake
@@ -249,20 +362,52 @@ void AWeapon::MultiPlayFireFX_Implementation()
             PlayerController->ClientStartCameraShake(FireCamShake);
         }
     }
+
+    AFPSMBCharacter* MyFPSPlayer = CastChecked<AFPSMBCharacter>(GetOwner());
+    if (!MyFPSPlayer->GetIsServer())
+    {
+        ServerPlayFireFX();
+    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-bool AWeapon::MultiPlayFireFX_Validate()
+bool AWeapon::ClientPlayFireFX_Validate()
 {    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-void AWeapon::ServerFire_Implementation()
+void AWeapon::OthersPlayersFireFX()
 {
-    Fire();
+    if (MuzzleVFX && ClientsGunMesh)
+    {
+        UGameplayStatics::SpawnEmitterAttached(MuzzleVFX, ClientsGunMesh, MuzzleSocketNameOthers, FVector::ZeroVector, FRotator::ZeroRotator,
+                                               EAttachLocation::SnapToTarget, true, EPSCPoolMethod::AutoRelease, true);
+    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-bool AWeapon::ServerFire_Validate()
+void AWeapon::ServerPlayFireFX_Implementation()
+{
+    OthersPlayersFireFX();
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AWeapon::ServerPlayFireFX_Validate()
+{    return true;}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::OnRep_OthersPlayFireFX()
+{
+    OthersPlayersFireFX();
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::ClientUpdateAmmo_Implementation()
+{
+    UpdateAmmoHUD();
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AWeapon::ClientUpdateAmmo_Validate()
 {    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -281,4 +426,5 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
     DOREPLIFETIME(AWeapon, CurrentAmmo);
+    DOREPLIFETIME_CONDITION(AWeapon, ShotsCounterFireFX, COND_SkipOwner);
 }
