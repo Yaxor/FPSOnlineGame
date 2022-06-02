@@ -160,7 +160,7 @@ void AWeapon::BeginPlay()
 void AWeapon::ClientStopFire_Implementation()
 {
     GetWorldTimerManager().ClearTimer(TimerHandle_Fire);
-    StopWeaponRecoil(); // Cambiar esto a solo si estaba disparando (un bool de si disparo por ejemplo)
+    StopWeaponRecoil();
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -172,7 +172,7 @@ void AWeapon::Fire()
 {
     if (CurrentAmmo <= 0)
     {
-        StopWeaponRecoil();
+        StopFire();
         return;
     }
 
