@@ -98,7 +98,7 @@ AFPSMBCharacter::AFPSMBCharacter()
     bAlwaysRelevant    = true;
     NetDormancy        = DORM_Never;
     NetUpdateFrequency = 120.0f;
-    NetPriority        = 6.0f;
+    NetPriority        = 2.0f;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -141,7 +141,10 @@ void AFPSMBCharacter::ServerSetRun_Implementation(bool bIsRuningVal)
 
         if (CurrentWeapon)
         {
-            CurrentWeapon->StopFire();
+            CurrentWeapon->ClientStopFire();
+#pragma region Old Logic
+            //CurrentWeapon->StopFire();
+#pragma endregion
         }
 
         return;
@@ -289,7 +292,10 @@ void AFPSMBCharacter::ChangeWeapon(uint8_t WeaponIndex)
 
     if (CurrentWeapon)
     {
-        CurrentWeapon->StopFire();
+        CurrentWeapon->ClientStopFire();
+#pragma region Old Logic
+        //CurrentWeapon->StopFire();
+#pragma endregion
     }
 
     // Update Current Weapon
@@ -457,7 +463,10 @@ void AFPSMBCharacter::OnRep_Died()
 {
     if (CurrentWeapon)
     {
-        CurrentWeapon->StopFire();
+        CurrentWeapon->ClientStopFire();
+#pragma region Old Logic
+        //CurrentWeapon->StopFire();
+#pragma endregion
     }
 }
 
@@ -488,6 +497,18 @@ void AFPSMBCharacter::ClientOnDeath_Implementation()
 
 bool AFPSMBCharacter::ClientOnDeath_Validate()
 {    return true;}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBCharacter::Destroyed()
+{
+    Super::Destroyed();
+
+    // Destroy all Weapons
+    for (AWeapon*& Weapon : Weapons)
+    {
+        Weapon->Destroy();
+    }
+}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AFPSMBCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

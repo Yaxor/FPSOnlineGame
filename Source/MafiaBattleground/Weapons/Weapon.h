@@ -128,8 +128,12 @@ public:
     /**/
     virtual void StartFire();
 
-    /* Call ClientStopFire() */
+    /* Stop the Fire Timer */
     virtual void StopFire();
+
+    /* Call StopFire() */
+    UFUNCTION(Client, Reliable, WithValidation)
+    void ClientStopFire();
 
     /* Trace the world, from pawn eyes to crosshair location */
     virtual void Fire();
@@ -149,10 +153,6 @@ protected:
     UFUNCTION(BlueprintImplementableEvent)
     void StopWeaponRecoil();
 
-    /* Stop the Fire Timer */
-    UFUNCTION(Client, Reliable, WithValidation)
-    void ClientStopFire();
-
     /* Call Fire() */
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerFire();
@@ -168,21 +168,21 @@ protected:
     void PlayImpactFX(EPhysicalSurface SurfaceType, FVector ImpactPoint);
 
     /* Play Impact FX in All Clients */
-    UFUNCTION(NetMulticast, Reliable, WithValidation)
+    UFUNCTION(NetMulticast, Unreliable, WithValidation)
     void MultiPlayImpactFX(EPhysicalSurface SurfaceType, FVector ImpactPoint);
 
     /* Call ClientPlayFireFX() */
     void PlayFireFX();
 
     /* Play Shot FX in Client & if is not the server call ServerPlayFireFX */
-    UFUNCTION(Client, Reliable, WithValidation)
+    UFUNCTION(Client, Unreliable, WithValidation)
     void ClientPlayFireFX();
 
     /* Play Fire FX in the ClientsWeaponMesh */
     void OthersPlayersFireFX();
 
     /* Call OthersPlayersFireFX */
-    UFUNCTION(Server, Reliable, WithValidation)
+    UFUNCTION(Server, Unreliable, WithValidation)
     void ServerPlayFireFX();
 
     /* Call OthersPlayersFireFX in the others clients, SkipOwner */

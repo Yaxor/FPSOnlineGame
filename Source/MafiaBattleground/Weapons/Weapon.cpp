@@ -34,7 +34,7 @@ AWeapon::AWeapon()
     GunMesh->bOnlyOwnerSee = true;
     GunMesh->CastShadow    = false;
 
-    // Make other gunmesh for the other clients
+    // Gunmesh for the other Players
     ClientsGunMesh = CreateDefaultSubobject<USkeletalMeshComponent>("ClientsGunMesh");
     ClientsGunMesh->bOwnerNoSee = true;
 
@@ -56,7 +56,10 @@ AWeapon::AWeapon()
 
     SetReplicates(true);
     SetReplicatingMovement(true);
-    bAlwaysRelevant = true;
+    bAlwaysRelevant    = true;
+    NetDormancy        = DORM_Never;
+    NetUpdateFrequency = 120.0f;
+    NetPriority        = 2.0f;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -122,7 +125,7 @@ bool AWeapon::MultiAim_Validate(bool bAimingVal)
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::Reload()
 {
-    // Call in animation reload
+    // TODO: Call in animation reload
 
     // If you are a Client, send a request to Server
     if (!GetIsServer()) // GetLocalRole() < ROLE_Authority)
@@ -131,7 +134,10 @@ void AWeapon::Reload()
         return;
     }
 
-    StopFire();
+#pragma region Old Logic
+    //StopFire();
+#pragma endregion
+    ClientStopFire();
     CurrentAmmo = MaxAmmo;
     ClientUpdateAmmo();
 }
@@ -144,16 +150,21 @@ void AWeapon::StartFire()
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::StopFire()
 {
-    //ClientStopFire();
-    if (GetIsServer())
-    {
-        ClientStopFire();
-    }
-    else
-    {
-        GetWorldTimerManager().ClearTimer(TimerHandle_Fire);
-        StopWeaponRecoil();
-    }
+    GetWorldTimerManager().ClearTimer(TimerHandle_Fire);
+    StopWeaponRecoil();
+
+#pragma region Old Logic
+    ////ClientStopFire();
+    //if (GetIsServer())
+    //{
+    //    ClientStopFire();
+    //}
+    //else
+    //{
+    //    GetWorldTimerManager().ClearTimer(TimerHandle_Fire);
+    //    StopWeaponRecoil();
+    //}
+#pragma endregion
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -168,8 +179,11 @@ void AWeapon::BeginPlay()
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::ClientStopFire_Implementation()
 {
-    GetWorldTimerManager().ClearTimer(TimerHandle_Fire);
-    StopWeaponRecoil();
+    StopFire();
+#pragma region Old Logic
+    /*GetWorldTimerManager().ClearTimer(TimerHandle_Fire);
+    StopWeaponRecoil();*/
+#pragma endregion
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -179,15 +193,18 @@ bool AWeapon::ClientStopFire_Validate()
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::Fire()
 {
-    if (CurrentAmmo <= 0)
-    {
-        StopFire();
-        return;
-    }
-
     if (!GetIsServer()) //GetLocalRole() < ROLE_Authority)
     {
         ServerFire();
+        return;
+    }
+
+    if (CurrentAmmo <= 0)
+    {
+        ClientStopFire();
+#pragma region Old Logic
+        //StopFire();
+#pragma endregion
         return;
     }
 
@@ -243,16 +260,17 @@ void AWeapon::Fire()
             TraceEndPoint = Hit.ImpactPoint;
         }
 
-        if (DebugWeaponDrawing > 0)
-        {
-            DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1.0f, 0, 1.0f);
-        }
-
-        PlayFireFX();
 
         if (MyFPSPlayer->GetIsAiming())
         {
             ClientWeaponRecoil();
+        }
+
+        PlayFireFX();
+
+        if (DebugWeaponDrawing > 0)
+        {
+            DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1.0f, 0, 1.0f);
         }
 
         if (Hit.GetActor())
@@ -356,9 +374,11 @@ void AWeapon::ClientPlayFireFX_Implementation()
     {
         UGameplayStatics::SpawnEmitterAttached(MuzzleVFX, GunMesh, MuzzleSocketName, FVector::ZeroVector, FRotator::ZeroRotator,
                                                EAttachLocation::SnapToTarget, true, EPSCPoolMethod::AutoRelease, true);
+#pragma region Old Logic
         //const FVector MuzzleLocation  = GunMesh->GetSocketLocation(MuzzleSocketName);
         //const FRotator MuzzleRotation = GunMesh->GetSocketRotation(MuzzleSocketName);
         //UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleVFX, MuzzleLocation, MuzzleRotation);
+#pragma endregion
     }
 
     // Camera Shake

@@ -18,6 +18,10 @@ AFPSMBPlayerController::AFPSMBPlayerController()
 {
     BaseTurnRate   = 45.0f;
     BaseLookUpRate = 45.0f;
+
+    bAlwaysRelevant    = true;
+    NetUpdateFrequency = 120.0f;
+    NetPriority        = 2.0f;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------

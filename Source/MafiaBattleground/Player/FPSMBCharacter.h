@@ -202,5 +202,7 @@ protected:
     UFUNCTION(Client, Reliable, WithValidation)
     void ClientOnDeath();
 
+    virtual void Destroyed() override;
+
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

@@ -118,14 +118,14 @@ void AShotgun::Fire()
                     TraceEndPoint = Hit.ImpactPoint;
                 }
 
+                ClientWeaponRecoil();
+
+                PlayFireFX();
+
                 if (DebugWeaponDrawingShotG > 0)
                 {
                     DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1.0f, 0, 1.0f);
                 }
-
-                PlayFireFX();
-
-                ClientWeaponRecoil();
 
                 if (Hit.GetActor())
                 {
