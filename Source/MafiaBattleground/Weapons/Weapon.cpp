@@ -144,7 +144,16 @@ void AWeapon::StartFire()
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::StopFire()
 {
-    ClientStopFire();
+    //ClientStopFire();
+    if (GetIsServer())
+    {
+        ClientStopFire();
+    }
+    else
+    {
+        GetWorldTimerManager().ClearTimer(TimerHandle_Fire);
+        StopWeaponRecoil();
+    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
