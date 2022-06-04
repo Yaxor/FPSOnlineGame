@@ -37,6 +37,7 @@ protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera)
     float BaseLookUpRate;
 
+
 public:
     //*******************************************************************************************************************
     //                                          PUBLIC FUNCTIONS                                                        *

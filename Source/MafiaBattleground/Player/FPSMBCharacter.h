@@ -80,6 +80,10 @@ protected:
     float DefaultSpringArmLength;
     UPROPERTY(EditDefaultsOnly, Category = Player);
     float RunMaxWalkSpeed;
+    UPROPERTY(EditDefaultsOnly, Category = Player)
+    float VelocityThresholdX;
+    UPROPERTY(EditDefaultsOnly, Category = Player)
+    float VelocityThresholdY;
 
     UPROPERTY(BlueprintReadWrite)
     bool bJumped;
@@ -99,13 +103,15 @@ public:
     FORCEINLINE bool GetIsServer() { return GetLocalRole() == ROLE_Authority && (GetRemoteRole() == ROLE_SimulatedProxy || GetRemoteRole() == ROLE_AutonomousProxy); };
 
     UFUNCTION(BlueprintCallable)
-    FORCEINLINE bool                    GetIsAiming()               { return bIsAiming; }
+    FORCEINLINE bool                    GetIsAiming()               { return bIsAiming; };
     FORCEINLINE USkeletalMeshComponent* GetArmsMesh()               { return ArmsMesh; };
     FORCEINLINE FVector                 GetArmsAimDefaultLocation() { return ArmsDefaultLocation; };
     FORCEINLINE bool                    GetIsDead()                 { return bIsDead; };
-    FORCEINLINE UCameraComponent*       GetCamera()                 { return FPSCamera; }
-    FORCEINLINE AWeapon*                GetCurrentWeapon()          { return CurrentWeapon; }
-    FORCEINLINE USpringArmComponent*    GetSpringArm()              { return SpringArm; }
+    FORCEINLINE UCameraComponent*       GetCamera()                 { return FPSCamera; };
+    FORCEINLINE AWeapon*                GetCurrentWeapon()          { return CurrentWeapon; };
+    FORCEINLINE USpringArmComponent*    GetSpringArm()              { return SpringArm; };
+    FORCEINLINE float                   GetVelocityThresholdX()     { return VelocityThresholdX; };
+    FORCEINLINE float                   GetVelocityThresholdY()     { return VelocityThresholdY; };
 
     //*******************************************************************************************************************
     //                                          PUBLIC FUNCTIONS                                                        *

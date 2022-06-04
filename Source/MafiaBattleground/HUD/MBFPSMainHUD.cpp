@@ -23,13 +23,4 @@ void AMBFPSMainHUD::BeginPlay()
 
     CreateMainHUD();
     CreateInGameMenu();
-
-    /*if (AFPSMBPlayerController* FPSMBPlayerController = Cast<AFPSMBPlayerController>(GetOwningPlayerController()))
-    {
-        if (FPSMBPlayerController->IsLocalController())
-        {
-            CreateMainHUD();
-            CreateInGameMenu();
-        }
-    }*/
 }
