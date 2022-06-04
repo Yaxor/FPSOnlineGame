@@ -93,6 +93,8 @@ AFPSMBCharacter::AFPSMBCharacter()
     DeathImpulse        = 20000.0f;
     DeathTime           = 10.0f;
     RunMaxWalkSpeed     = 1000.0f;
+    VelocityThresholdX  = 600.0f;
+    VelocityThresholdY  = 600.0f;
 
 
     bAlwaysRelevant    = true;
@@ -136,15 +138,18 @@ void AFPSMBCharacter::ServerSetRun_Implementation(bool bIsRuningVal)
     // Run
     if (!bIsAiming)
     {
-        bIsRuning = bIsRuningVal;
-        ServerSetMaxSpeed();
+        // Change bIsRuning if he is going to walk or if he is running and my speeds are greater than 0 
+        const float VelX = FMath::Abs(GetVelocity().X);
+        const float VelY = FMath::Abs(GetVelocity().Y);
+        if ((VelX > 0) || (VelY > 0) || !bIsRuningVal)
+        {
+            bIsRuning = bIsRuningVal;
+            ServerSetMaxSpeed();
+        }
 
-        if (CurrentWeapon)
+        if (bIsRuning && CurrentWeapon)
         {
             CurrentWeapon->ClientStopFire();
-#pragma region Old Logic
-            //CurrentWeapon->StopFire();
-#pragma endregion
         }
 
         return;
@@ -293,9 +298,6 @@ void AFPSMBCharacter::ChangeWeapon(uint8_t WeaponIndex)
     if (CurrentWeapon)
     {
         CurrentWeapon->ClientStopFire();
-#pragma region Old Logic
-        //CurrentWeapon->StopFire();
-#pragma endregion
     }
 
     // Update Current Weapon
@@ -464,9 +466,6 @@ void AFPSMBCharacter::OnRep_Died()
     if (CurrentWeapon)
     {
         CurrentWeapon->ClientStopFire();
-#pragma region Old Logic
-        //CurrentWeapon->StopFire();
-#pragma endregion
     }
 }
 

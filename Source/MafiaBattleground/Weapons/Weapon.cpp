@@ -134,9 +134,6 @@ void AWeapon::Reload()
         return;
     }
 
-#pragma region Old Logic
-    //StopFire();
-#pragma endregion
     ClientStopFire();
     CurrentAmmo = MaxAmmo;
     ClientUpdateAmmo();
@@ -152,19 +149,6 @@ void AWeapon::StopFire()
 {
     GetWorldTimerManager().ClearTimer(TimerHandle_Fire);
     StopWeaponRecoil();
-
-#pragma region Old Logic
-    ////ClientStopFire();
-    //if (GetIsServer())
-    //{
-    //    ClientStopFire();
-    //}
-    //else
-    //{
-    //    GetWorldTimerManager().ClearTimer(TimerHandle_Fire);
-    //    StopWeaponRecoil();
-    //}
-#pragma endregion
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -180,10 +164,6 @@ void AWeapon::BeginPlay()
 void AWeapon::ClientStopFire_Implementation()
 {
     StopFire();
-#pragma region Old Logic
-    /*GetWorldTimerManager().ClearTimer(TimerHandle_Fire);
-    StopWeaponRecoil();*/
-#pragma endregion
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -202,9 +182,6 @@ void AWeapon::Fire()
     if (CurrentAmmo <= 0)
     {
         ClientStopFire();
-#pragma region Old Logic
-        //StopFire();
-#pragma endregion
         return;
     }
 
@@ -374,11 +351,6 @@ void AWeapon::ClientPlayFireFX_Implementation()
     {
         UGameplayStatics::SpawnEmitterAttached(MuzzleVFX, GunMesh, MuzzleSocketName, FVector::ZeroVector, FRotator::ZeroRotator,
                                                EAttachLocation::SnapToTarget, true, EPSCPoolMethod::AutoRelease, true);
-#pragma region Old Logic
-        //const FVector MuzzleLocation  = GunMesh->GetSocketLocation(MuzzleSocketName);
-        //const FRotator MuzzleRotation = GunMesh->GetSocketRotation(MuzzleSocketName);
-        //UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleVFX, MuzzleLocation, MuzzleRotation);
-#pragma endregion
     }
 
     // Camera Shake
