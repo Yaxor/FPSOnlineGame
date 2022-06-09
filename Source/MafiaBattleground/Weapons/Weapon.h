@@ -103,9 +103,9 @@ public:
     FORCEINLINE USkeletalMeshComponent* GetGunMesh()              { return GunMesh; };
     FORCEINLINE USkeletalMeshComponent* GetClientsGunMesh()       { return ClientsGunMesh; };
     FORCEINLINE FName                   GetWeaponSocket()         { return WeaponSocket; };
+    FORCEINLINE bool                    GetCanReload()            { return CurrentAmmo != MaxAmmo; };
     FORCEINLINE float                   GetWeaponAimFOV()         { return AimFOV; };
     FORCEINLINE float                   GetWeaponInterpSpeedAim() { return AimInterSpeedAim; };
-    FORCEINLINE float                   GetCanReload()            { return CurrentAmmo != MaxAmmo; };
 
     UFUNCTION(BlueprintCallable)
     FORCEINLINE uint8 GetCurrentAmmo()                            { return CurrentAmmo; };

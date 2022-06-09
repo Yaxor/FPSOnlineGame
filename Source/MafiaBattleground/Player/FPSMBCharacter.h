@@ -93,6 +93,8 @@ protected:
     bool bIsDead;
     UPROPERTY(Replicated, BlueprintReadOnly)
     bool bIsRuning;
+    UPROPERTY(Replicated, BlueprintReadOnly)
+    bool bIsReloading;
 
 public:
     //*******************************************************************************************************************
@@ -103,13 +105,14 @@ public:
     FORCEINLINE bool GetIsServer() { return GetLocalRole() == ROLE_Authority && (GetRemoteRole() == ROLE_SimulatedProxy || GetRemoteRole() == ROLE_AutonomousProxy); };
 
     UFUNCTION(BlueprintCallable)
-    FORCEINLINE bool                    GetIsAiming()               { return bIsAiming; };
     FORCEINLINE USkeletalMeshComponent* GetArmsMesh()               { return ArmsMesh; };
     FORCEINLINE FVector                 GetArmsAimDefaultLocation() { return ArmsDefaultLocation; };
-    FORCEINLINE bool                    GetIsDead()                 { return bIsDead; };
     FORCEINLINE UCameraComponent*       GetCamera()                 { return FPSCamera; };
     FORCEINLINE AWeapon*                GetCurrentWeapon()          { return CurrentWeapon; };
     FORCEINLINE USpringArmComponent*    GetSpringArm()              { return SpringArm; };
+    FORCEINLINE bool                    GetIsAiming()               { return bIsAiming; };
+    FORCEINLINE bool                    GetIsDead()                 { return bIsDead; };
+    FORCEINLINE bool                    GetIsReloading()            { return bIsReloading; };
     FORCEINLINE float                   GetVelocityThresholdX()     { return VelocityThresholdX; };
     FORCEINLINE float                   GetVelocityThresholdY()     { return VelocityThresholdY; };
 
@@ -152,6 +155,9 @@ protected:
     virtual void Tick(float DeltaTime) override;
 
     void WeaponReload();
+
+    UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable)
+    void ServerWeaponReload(bool ReloadingVal);
 
     void UpdateCrouch(bool bIsCrouch, float DeltaTime);
 

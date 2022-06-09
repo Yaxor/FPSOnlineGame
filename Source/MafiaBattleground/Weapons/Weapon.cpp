@@ -125,8 +125,6 @@ bool AWeapon::MultiAim_Validate(bool bAimingVal)
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::Reload()
 {
-    // TODO: Call in animation reload
-
     // If you are a Client, send a request to Server
     if (!GetIsServer()) // GetLocalRole() < ROLE_Authority)
     {
@@ -237,11 +235,12 @@ void AWeapon::Fire()
             TraceEndPoint = Hit.ImpactPoint;
         }
 
-
-        if (MyFPSPlayer->GetIsAiming())
+        /*if (MyFPSPlayer->GetIsAiming())
         {
             ClientWeaponRecoil();
-        }
+        }*/
+
+        ClientWeaponRecoil();
 
         PlayFireFX();
 

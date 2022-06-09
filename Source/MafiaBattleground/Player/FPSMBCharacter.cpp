@@ -236,13 +236,28 @@ void AFPSMBCharacter::WeaponReload()
 {
     if (CurrentWeapon->GetCanReload())
     {
-        // Stop runing and aiming
-        ServerSetRun(false);
-        ServerSetAiming(false);
+        // Stop fire and StandUp
+        UnCrouch();
+        CurrentWeapon->StopFire();
 
-        CurrentWeapon->Reload();
+        // Set bIsReloadin to true and stop runing
+        ServerWeaponReload(true);
+        ServerSetRun(false);
     }
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBCharacter::ServerWeaponReload_Implementation(bool ReloadingVal)
+{
+    bIsReloading = ReloadingVal;
+
+    // If the reload animation finish reload the weapon
+    ReloadingVal? NULL : CurrentWeapon->Reload();
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AFPSMBCharacter::ServerWeaponReload_Validate(bool ReloadingVal)
+{    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 void AFPSMBCharacter::UpdateCrouch(bool bIsCrouch, float DeltaTime)
@@ -516,8 +531,9 @@ void AFPSMBCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 
     DOREPLIFETIME(AFPSMBCharacter, CurrentWeaponIndex);
     DOREPLIFETIME(AFPSMBCharacter, CurrentWeapon);
-    DOREPLIFETIME(AFPSMBCharacter, bIsAiming);
-    DOREPLIFETIME(AFPSMBCharacter, bIsRuning);
-    DOREPLIFETIME(AFPSMBCharacter, bIsDead);
     DOREPLIFETIME(AFPSMBCharacter, Weapons);
+    DOREPLIFETIME(AFPSMBCharacter, bIsAiming);
+    DOREPLIFETIME(AFPSMBCharacter, bIsDead);
+    DOREPLIFETIME(AFPSMBCharacter, bIsReloading);
+    DOREPLIFETIME(AFPSMBCharacter, bIsRuning);
 }

@@ -150,7 +150,7 @@ void AFPSMBPlayerController::BeginCrouch()
 {
     if (MyPlayerRef)
     {
-        if (!MyPlayerRef->GetIsDead())
+        if ((!MyPlayerRef->GetIsDead()) && (!MyPlayerRef->GetIsReloading()))
         {
             MyPlayerRef->Crouch();
         }
@@ -174,7 +174,7 @@ void AFPSMBPlayerController::StartFireWeapon()
 {
     if (MyPlayerRef)
     {
-        if ((!MyPlayerRef->GetIsDead()) && (MyPlayerRef->GetCurrentWeapon()) && (!MyPlayerRef->bIsRuning))
+        if ((!MyPlayerRef->GetIsDead()) && (MyPlayerRef->GetCurrentWeapon()) && (!MyPlayerRef->bIsRuning) && (!MyPlayerRef->GetIsReloading()))
         {
             MyPlayerRef->GetCurrentWeapon()->StartFire();
         }
