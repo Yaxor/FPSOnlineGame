@@ -136,7 +136,7 @@ bool AFPSMBCharacter::ClientSetAiming_Validate(bool bIsAimingVal)
 void AFPSMBCharacter::ServerSetRun_Implementation(bool bIsRuningVal)
 {
     // Run
-    if (!bIsAiming)
+    if (!bIsAiming && !bIsReloading)
     {
         // Change bIsRuning if he is going to walk or if he is running and my speeds are greater than 0 
         const float VelX = FMath::Abs(GetVelocity().X);
@@ -293,7 +293,7 @@ bool AFPSMBCharacter::ServerSpawnDefaultWeapon_Validate()
 void AFPSMBCharacter::ChangeWeapon(uint8_t WeaponIndex)
 {
     // If it is greater than the number of items or less than 0 or WeaponIndex is equals current or is a invalid index return
-    if ((WeaponIndex >= Weapons.Num()) || (WeaponIndex < 0) || ( WeaponIndex == CurrentWeaponIndex) || (!Weapons.IsValidIndex(CurrentWeaponIndex)))
+    if ((WeaponIndex >= Weapons.Num()) || (WeaponIndex < 0) || ( WeaponIndex == CurrentWeaponIndex) || (!Weapons.IsValidIndex(CurrentWeaponIndex)) || bIsReloading)
     {
         return;
     }
