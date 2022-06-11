@@ -1,0 +1,13 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UE4Editor-AdvancedSteamSessions-0002.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"P:\UnrealProjects\FPSOnlineGame\Intermediate\Build\Win64\MafiaBattlegroundEditor\Development\Engine\SharedPCH.Engine.ShadowErrors.h.obj"
+"P:\UnrealProjects\FPSOnlineGame\Plugins\AdvancedSessions\AdvancedSteamSessions\Intermediate\Build\Win64\UE4Editor\Development\AdvancedSteamSessions\Module.AdvancedSteamSessions.cpp.obj"
+"P:\UnrealProjects\FPSOnlineGame\Plugins\AdvancedSessions\AdvancedSteamSessions\Intermediate\Build\Win64\UE4Editor\Development\AdvancedSteamSessions\Module.AdvancedSteamSessions.gen.cpp.obj"
+"P:\UnrealProjects\FPSOnlineGame\Plugins\AdvancedSessions\AdvancedSteamSessions\Intermediate\Build\Win64\UE4Editor\Development\AdvancedSteamSessions\Default.rc2.res"
+/OUT:"P:\UnrealProjects\FPSOnlineGame\Plugins\AdvancedSessions\AdvancedSteamSessions\Intermediate\Build\Win64\UE4Editor\Development\AdvancedSteamSessions\UE4Editor-AdvancedSteamSessions-0002.lib"

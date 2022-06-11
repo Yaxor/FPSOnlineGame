@@ -46,6 +46,11 @@ protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Weapon)
     UParticleSystem* MuzzleVFX;
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SFX)
+    class USoundCue* ShotSFX;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SFX)
+    class USoundCue* ReloadSFX;
+
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Weapon)
     UTexture2D* WeaponIcon;
 
@@ -141,6 +146,9 @@ public:
     /* Set life span */
     void OnDeath();
 
+    UFUNCTION(NetMulticast, Reliable, WithValidation)
+    void MultiPlayReloadSound();
+
 protected:
     //*******************************************************************************************************************
     //                                          PROTECTED FUNCTIONS                                                     *
@@ -156,6 +164,11 @@ protected:
     /* Call Fire() */
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerFire();
+
+    void PlayShotSound();
+
+    UFUNCTION(NetMulticast, Reliable, WithValidation)
+    void MultiPlayShotSound();
 
     void WeaponRecoil_Delay();
 

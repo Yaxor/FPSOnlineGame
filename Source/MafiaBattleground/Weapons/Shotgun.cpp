@@ -118,6 +118,8 @@ void AShotgun::Fire()
                     TraceEndPoint = Hit.ImpactPoint;
                 }
 
+                MultiPlayShotSound();
+
                 ClientWeaponRecoil();
 
                 PlayFireFX();
