@@ -240,6 +240,9 @@ void AFPSMBCharacter::WeaponReload()
         UnCrouch();
         CurrentWeapon->StopFire();
 
+        // Play reload weapon sound
+        CurrentWeapon->MultiPlayReloadSound();
+
         // Set bIsReloadin to true and stop runing
         ServerWeaponReload(true);
         ServerSetRun(false);

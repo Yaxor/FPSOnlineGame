@@ -13,6 +13,7 @@
 
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 #include "PhysicalMaterials/PhysicalMaterial.h"
 
@@ -240,6 +241,8 @@ void AWeapon::Fire()
             ClientWeaponRecoil();
         }*/
 
+        MultiPlayShotSound();
+
         ClientWeaponRecoil();
 
         PlayFireFX();
@@ -266,6 +269,20 @@ void AWeapon::OnDeath()
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::MultiPlayReloadSound_Implementation()
+{
+    if (ReloadSFX && GunMesh)
+    {
+        UGameplayStatics::SpawnSoundAttached(ReloadSFX, GunMesh, MuzzleSocketName, FVector::ZeroVector,
+                                             EAttachLocation::KeepRelativeOffset, true, 1.0f, 1.0f, 0.0f, nullptr, nullptr, true);
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AWeapon::MultiPlayReloadSound_Validate()
+{    return true;}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
 void AWeapon::ServerFire_Implementation()
 {
     Fire();
@@ -273,6 +290,20 @@ void AWeapon::ServerFire_Implementation()
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 bool AWeapon::ServerFire_Validate()
+{    return true;}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AWeapon::MultiPlayShotSound_Implementation()
+{
+    if (ShotSFX && GunMesh)
+    {
+        UGameplayStatics::SpawnSoundAttached(ShotSFX, GunMesh, MuzzleSocketName, FVector::ZeroVector,
+                                             EAttachLocation::KeepRelativeOffset, true, 1.0f, 1.0f, 0.0f, nullptr, nullptr, true);
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+bool AWeapon::MultiPlayShotSound_Validate()
 {    return true;}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
