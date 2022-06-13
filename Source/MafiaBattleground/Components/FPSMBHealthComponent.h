@@ -38,6 +38,9 @@ protected:
     //                                          VARIABLES                                                               *
     //*******************************************************************************************************************
 
+    UPROPERTY()
+    class AMBFPSMainHUD* MyMainHUD;
+
     /* Can do damage to all players */
     UPROPERTY(EditDefaultsOnly)
     bool bFriendlyDamage;
@@ -69,9 +72,17 @@ protected:
 
     virtual void BeginPlay() override;
 
+    void GetMyHUD_Delay();
+    // Get and Set MyHUD if i am locally controlled
+    UFUNCTION()
+    void GetMyHUD();
+
     UFUNCTION()
     void HandleTakeAnyDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
                              class AController* InstigatedBy, AActor* DamageCauser);
+
+    UFUNCTION(Client, Unreliable)
+    void ClientDamageFeedback();
 
     UFUNCTION()
     void OnRep_Health(float OldHealth);
