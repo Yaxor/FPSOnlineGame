@@ -136,7 +136,7 @@ bool AFPSMBCharacter::ClientSetAiming_Validate(bool bIsAimingVal)
 void AFPSMBCharacter::ServerSetRun_Implementation(bool bIsRuningVal)
 {
     // Run
-    if (!bIsAiming && !bIsReloading)
+    if (!bIsAiming && !bIsReloading && !bIsCrouched)
     {
         // Change bIsRuning if he is going to walk or if he is running and my speeds are greater than 0 
         const float VelX = FMath::Abs(GetVelocity().X);
