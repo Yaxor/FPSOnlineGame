@@ -172,6 +172,8 @@ protected:
     UFUNCTION()
     void CheckInitialParametersDelayed();
 
+    void SetReviveText(bool bVisible);
+
     /* Spawn Default Weapon */
     UFUNCTION(Server, Reliable, WithValidation)
     void ServerSpawnDefaultWeapon();

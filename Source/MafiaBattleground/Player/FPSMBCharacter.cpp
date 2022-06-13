@@ -20,6 +20,7 @@
 #include "FPSMBPlayerController.h"
 #include "MafiaBattleground/Weapons/Weapon.h"
 #include "MafiaBattleground/Components/FPSMBHealthComponent.h"
+#include "MafiaBattleground/HUD/MBFPSMainHUD.h"
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 AFPSMBCharacter::AFPSMBCharacter()
@@ -234,6 +235,7 @@ void AFPSMBCharacter::CheckInitialParametersDelayed()
         {
             ServerSpawnDefaultWeapon();
             SetAimingCrosshair(false);
+            SetReviveText(false);
         }
     }
 
@@ -241,6 +243,18 @@ void AFPSMBCharacter::CheckInitialParametersDelayed()
     {
         // Start Heal Loop
         GetWorldTimerManager().SetTimer(TimerHandle_Heal, this, &AFPSMBCharacter::LoopHeal, HealLoopTime, true, 0.0f);
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBCharacter::SetReviveText(bool bVisible)
+{
+    if (AFPSMBPlayerController* MBGPlayerController = Cast<AFPSMBPlayerController>(GetController()))
+    {
+        if (AMBFPSMainHUD* MainHUD = Cast<AMBFPSMainHUD>(MBGPlayerController->GetHUD()))
+        {
+            MainHUD->SetReviveText(bVisible);
+        }
     }
 }
 
@@ -523,6 +537,7 @@ bool AFPSMBCharacter::MultiOnDeathMesh_Validate(const FVector& DeathDirection)
 void AFPSMBCharacter::ClientOnDeath_Implementation()
 {
     OnDeathHUD();
+    SetReviveText(true);
 }
 
 bool AFPSMBCharacter::ClientOnDeath_Validate()

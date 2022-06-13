@@ -30,6 +30,8 @@ public:
     void CreateInGameMenu();
     UFUNCTION(BlueprintImplementableEvent)
     void DamageFeedback();
+    UFUNCTION(BlueprintImplementableEvent)
+    void SetReviveText(bool bIsVisible);
     UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
     void ToggleInGameMenu();
 
