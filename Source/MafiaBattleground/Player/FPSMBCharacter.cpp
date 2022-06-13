@@ -92,6 +92,7 @@ AFPSMBCharacter::AFPSMBCharacter()
     CrouchInterpSpeed   = 10.0f;
     DeathImpulse        = 20000.0f;
     DeathTime           = 10.0f;
+    HealLoopTime        = 1.5f;
     RunMaxWalkSpeed     = 1000.0f;
     VelocityThresholdX  = 600.0f;
     VelocityThresholdY  = 600.0f;
@@ -188,6 +189,12 @@ void AFPSMBCharacter::BeginPlay()
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
+void AFPSMBCharacter::LoopHeal()
+{
+    HealthComp->Heal(10.0f);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
 void AFPSMBCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
@@ -203,7 +210,7 @@ void AFPSMBCharacter::CheckInitialPlayerRefInController_Delay()
 {
     FLatentActionInfo LatentInfo;
     LatentInfo.CallbackTarget    = this;
-    LatentInfo.ExecutionFunction = FName("SetPlayerRefToController");
+    LatentInfo.ExecutionFunction = FName("CheckInitialParametersDelayed");
     LatentInfo.Linkage           = 0;
     LatentInfo.UUID              = 0;
 
@@ -211,7 +218,7 @@ void AFPSMBCharacter::CheckInitialPlayerRefInController_Delay()
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-void AFPSMBCharacter::SetPlayerRefToController()
+void AFPSMBCharacter::CheckInitialParametersDelayed()
 {
     APlayerController* PlayerController = Cast<APlayerController>(GetController());
     if (PlayerController)
@@ -228,6 +235,12 @@ void AFPSMBCharacter::SetPlayerRefToController()
             ServerSpawnDefaultWeapon();
             SetAimingCrosshair(false);
         }
+    }
+
+    if (GetIsServer())
+    {
+        // Start Heal Loop
+        GetWorldTimerManager().SetTimer(TimerHandle_Heal, this, &AFPSMBCharacter::LoopHeal, HealLoopTime, true, 0.0f);
     }
 }
 

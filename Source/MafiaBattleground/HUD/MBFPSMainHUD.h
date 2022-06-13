@@ -28,6 +28,8 @@ public:
 
     UFUNCTION(BlueprintImplementableEvent)
     void CreateInGameMenu();
+    UFUNCTION(BlueprintImplementableEvent)
+    void DamageFeedback();
     UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
     void ToggleInGameMenu();
 

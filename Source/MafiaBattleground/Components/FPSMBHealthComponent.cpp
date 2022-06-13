@@ -9,7 +9,11 @@
 
 #include "Net/UnrealNetwork.h"
 
+#include "Kismet/KismetSystemLibrary.h"
+
 #include "MafiaBattleground/Player/FPSMBCharacter.h"
+#include "MafiaBattleground/Player/FPSMBPlayerController.h"
+#include "MafiaBattleground/HUD/MBFPSMainHUD.h"
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 UFPSMBHealthComponent::UFPSMBHealthComponent()
@@ -31,14 +35,14 @@ float UFPSMBHealthComponent::GetHealth() const
 //------------------------------------------------------------------------------------------------------------------------------------------
 void UFPSMBHealthComponent::Heal(float HealAmount)
 {
-    if ((HealAmount <= 0.0f) || (Health <= 0.0f) || (bIsDead))
+    if ((HealAmount <= 0.0f) || (Health <= 0.0f) || (bIsDead) || (Health == MaxHealth))
     {
         return;
     }
 
     Health = FMath::Clamp(Health + HealAmount, 0.0f, MaxHealth);
 
-    GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, FString::Printf(TEXT("Get Heal: %s (+%s)"), *FString::SanitizeFloat(Health), *FString::SanitizeFloat(HealAmount)));
+    //GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, FString::Printf(TEXT("Get Heal: %s (+%s)"), *FString::SanitizeFloat(Health), *FString::SanitizeFloat(HealAmount)));
 
     OnHealthChanged.Broadcast(this, Health, (-HealAmount), nullptr, nullptr, nullptr);
 }
@@ -81,6 +85,38 @@ void UFPSMBHealthComponent::BeginPlay()
             MyCharacter->OnTakeAnyDamage.AddDynamic(this, &UFPSMBHealthComponent::HandleTakeAnyDamage);
         }
     }
+
+    GetMyHUD_Delay();
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void UFPSMBHealthComponent::GetMyHUD_Delay()
+{
+    FLatentActionInfo LatentInfo;
+    LatentInfo.CallbackTarget    = this;
+    LatentInfo.ExecutionFunction = FName("GetMyHUD");
+    LatentInfo.Linkage           = 0;
+    LatentInfo.UUID              = 0;
+
+    UKismetSystemLibrary::Delay(GetWorld(), 0.02f, LatentInfo); //0.1f
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void UFPSMBHealthComponent::GetMyHUD()
+{
+    if (AFPSMBCharacter* MyCharacter = Cast<AFPSMBCharacter>(GetOwner()))
+    {
+        if (MyCharacter->IsLocallyControlled())
+        {
+            if (AFPSMBPlayerController* MyController = Cast<AFPSMBPlayerController>(MyCharacter->GetController()))
+            {
+                if (AMBFPSMainHUD* MainHUD = Cast<AMBFPSMainHUD>(MyController->GetHUD()))
+                {
+                    MyMainHUD = MainHUD;
+                }
+            }
+        }
+    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -101,9 +137,20 @@ void UFPSMBHealthComponent::HandleTakeAnyDamage(AActor* DamagedActor, float Dama
     Health  = FMath::Clamp(Health - Damage, 0.0f, MaxHealth);
     bIsDead = (Health <= 0.0f);
 
-    GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, FString::Printf(TEXT("Get Damage: %s (-%s)"), *FString::SanitizeFloat(Health), *FString::SanitizeFloat(Damage)));
+    ClientDamageFeedback();
+
+    //GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, FString::Printf(TEXT("Get Damage: %s (-%s)"), *FString::SanitizeFloat(Health), *FString::SanitizeFloat(Damage)));
 
     OnHealthChanged.Broadcast(this, Health, Damage, DamageType, InstigatedBy, DamageCauser);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+void UFPSMBHealthComponent::ClientDamageFeedback_Implementation()
+{
+    if (MyMainHUD)
+    {
+        MyMainHUD->DamageFeedback();
+    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------

@@ -78,6 +78,8 @@ protected:
     UPROPERTY(EditDefaultsOnly, Category = Player);
     float DefaultMaxWalkSpeed;
     float DefaultSpringArmLength;
+    UPROPERTY(EditDefaultsOnly, Category = Player)
+    float HealLoopTime;
     UPROPERTY(EditDefaultsOnly, Category = Player);
     float RunMaxWalkSpeed;
     UPROPERTY(EditDefaultsOnly, Category = Player)
@@ -95,6 +97,8 @@ protected:
     bool bIsRuning;
     UPROPERTY(Replicated, BlueprintReadOnly)
     bool bIsReloading;
+
+    FTimerHandle TimerHandle_Heal;
 
 public:
     //*******************************************************************************************************************
@@ -151,6 +155,8 @@ protected:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
 
+    void LoopHeal();
+
     // Called every frame
     virtual void Tick(float DeltaTime) override;
 
@@ -164,7 +170,7 @@ protected:
     void CheckInitialPlayerRefInController_Delay();
     /* Set the MafiaBattlegroundCharacter reference into the MBGPlayerController */
     UFUNCTION()
-    void SetPlayerRefToController();
+    void CheckInitialParametersDelayed();
 
     /* Spawn Default Weapon */
     UFUNCTION(Server, Reliable, WithValidation)
