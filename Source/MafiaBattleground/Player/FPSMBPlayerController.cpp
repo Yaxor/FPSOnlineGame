@@ -153,6 +153,7 @@ void AFPSMBPlayerController::BeginCrouch()
         if ((!MyPlayerRef->GetIsDead()) && (!MyPlayerRef->GetIsReloading()))
         {
             MyPlayerRef->Crouch();
+            MyPlayerRef->ServerSetRun(false);
         }
     }
 }
